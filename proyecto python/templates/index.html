@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FastFoot</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+
+    <!-- NAVBAR -->
+    <nav class="navbar">
+        <div class="contenedor">
+            <a href="/" class="logo-container">
+                <img class="logo" src="{{url_for('static', filename='img/logo.png') }}">
+                <span>FastFoot</span>
+            </a>
+
+            <div class="menu-toggle" onclick="toggleMenu()">☰</div>
+
+            <div class="menu" id="menu">
+                <a href="#"><img class="icono" src="{{url_for('static', filename='img/usuario.webp') }}"></a>
+                <a href="#"><img class="icono" src="{{url_for('static', filename='img/carrito.png') }}"></a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- MAIN -->
+    <main>
+
+        <!-- HERO -->
+        <section class="hero">
+            <div class="hero-content">
+                <h1>FastFoot</h1>
+                <p>Comida rápida, deliciosa y al mejor precio</p>
+                <button class="btn-primary">Ver menú</button>
+            </div>
+        </section>
+
+        <!-- PRODUCTOS -->
+        <section class="productos">
+            <h2>🔥 Destacados</h2>
+
+            <div class="grid">
+                <div class="card">
+                    <img src="{{url_for('static', filename='img/hamburgesa.jpg')}}">
+                    <h3>Hamburguesa</h3>
+                    <p class="precio">S/. 8</p>
+                </div>
+
+                <div class="card">
+                    <img src="{{url_for('static', filename='img/1a4pollo.webp')}}">
+                    <h3>1/4 Pollo a la brasa</h3>
+                    <p class="precio">S/. 17</p>
+                </div>
+
+                <div class="card">
+                    <img src="{{url_for('static', filename='img/Salchipapa.webp')}}">
+                    <h3>Salchipapa</h3>
+                    <p class="precio">S/. 12</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- PROMO -->
+        <section class="promo">
+            <h2>💸 Ofertas</h2>
+            <p>Aprovecha precios por tiempo limitado</p>
+
+            <div class="grid">
+                <div class="card promo-card">
+                    <img src="{{url_for('static', filename='img/hamburgesa.jpg')}}">
+                    <h3>Hamburguesa</h3>
+                    <p class="precio">S/. 5</p>
+                </div>
+
+                <div class="card promo-card">
+                    <img src="{{url_for('static', filename='img/1a4pollo.webp')}}">
+                    <h3>1/4 Pollo</h3>
+                    <p class="precio">S/. 13</p>
+                </div>
+
+                <div class="card promo-card">
+                    <img src="{{url_for('static', filename='img/Salchipapa.webp')}}">
+                    <h3>Salchipapa</h3>
+                    <p class="precio">S/. 8</p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+</body>
+</html>

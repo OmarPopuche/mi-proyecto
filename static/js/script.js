@@ -4,6 +4,90 @@ function toggleCarrito() {
     document.getElementById("carrito").classList.toggle("active");
 }
 
+async function login() {
+
+    const codigo = document.getElementById("login-codigo").value;
+
+    const res = await fetch("/api/usuario", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            accion: "login",
+            codigo: codigo
+        })
+    });
+
+    const data = await res.json();
+
+    if (data.ok) {
+
+        document.getElementById("usuario-nombre").innerText =
+            data.usuario.nombres + " " + data.usuario.apellidos;
+
+        mostrarVista("usuario");
+
+    } else {
+        alert(data.mensaje);
+    }
+}
+
+function mostrarVista(vista) {
+
+    document.getElementById("vista-inicial").style.display = "none";
+    document.getElementById("vista-login").style.display = "none";
+    document.getElementById("vista-registro").style.display = "none";
+    document.getElementById("vista-usuario").style.display = "none";
+
+    document.getElementById("vista-" + vista).style.display = "block";
+}
+
+async function registrar() {
+
+    const codigo = document.getElementById("reg-codigo").value;
+    const nombres = document.getElementById("reg-nombre").value;
+    const apellidos = document.getElementById("reg-apellido").value;
+
+    const res = await fetch("/api/usuario", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            accion: "registrar",
+            codigo: codigo,
+            nombres: nombres,
+            apellidos: apellidos
+        })
+    });
+
+    const data = await res.json();
+
+    if (data.ok) {
+        alert("Registrado correctamente");
+        volver();
+    } else {
+        alert(data.mensaje);
+    }
+}
+
+
+async function logout() {
+
+    await fetch("/api/usuario", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            accion: "logout"
+        })
+    });
+
+    location.reload();
+}
+
 function agregarCarrito(nombre, precio) {
 
     let producto = carrito.find(p => p.nombre === nombre);

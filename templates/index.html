@@ -26,7 +26,7 @@
                     </span>
                 {% endif %}
 
-                <a href="/login">
+                <a href="#" onclick="toggleLogin()">
                     <img class="icono" src="{{ url_for('static', filename='img/usuario.webp') }}">
                 </a>
 
@@ -37,6 +37,51 @@
             </div>
         </div>
     </nav>
+
+    <!-- PANEL LOGIN -->
+    <div id="panel-login" class="panel-login">
+
+        <div class="panel-header">
+            <h3>Usuario</h3>
+            <span onclick="toggleLogin()">✖</span>
+        </div>
+
+        <div id="login-contenido">
+
+            <!-- INICIO -->
+            <div id="vista-inicial">
+                <button onclick="mostrarVista('login')">Iniciar Sesión</button>
+                <button onclick="mostrarVista('registro')">Registrarse</button>
+                <button onclick="modoInvitado()">Continuar como invitado</button>
+            </div>
+
+            <!-- LOGIN -->
+            <div id="vista-login" style="display:none;">
+                <input type="text" id="login-codigo" placeholder="Código"><br>
+                <button onclick="login()">Ingresar</button>
+                <button onclick="volver()">Volver</button>
+            </div>
+
+            <!-- REGISTRO -->
+            <div id="vista-registro" style="display:none;">
+                <input type="text" id="reg-codigo" placeholder="Código"><br>
+                <input type="text" id="reg-nombre" placeholder="Nombres"><br>
+                <input type="text" id="reg-apellido" placeholder="Apellidos"><br>
+                <button onclick="registrar()">Registrarse</button>
+                <button onclick="volver()">Volver</button>
+            </div>
+
+            <!-- USUARIO LOGUEADO -->
+            <div id="vista-usuario" style="display:none;">
+                <h3 id="usuario-nombre"></h3>
+
+                <button onclick="logout()">Cerrar sesión</button>
+                <button onclick="volver()">Volver</button>
+            </div>
+
+        </div>
+
+    </div>
 
     <!-- MAIN -->
     <main>

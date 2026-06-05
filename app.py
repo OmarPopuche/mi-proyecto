@@ -1,4 +1,4 @@
-from flask import Flask, request, render_template, render_template_string, redirect, url_for, session
+from flask import Flask, request, render_template, render_template_string, redirect, url_for, session, jsonify
 
 app = Flask(__name__)
 app.secret_key = "clave_secreta"
@@ -89,7 +89,7 @@ HTML_LOGIN = """
 # 🔹 TU PÁGINA PRINCIPAL
 @app.route("/")
 def inicio():
-    return render_template("index.html")
+    return render_template("index.html", usuario=session.get("usuario"))
 
 # 🔹 LOGIN
 @app.route("/login", methods=["GET", "POST"])
@@ -197,6 +197,58 @@ def login():
 
     return render_template_string(HTML_LOGIN, mensaje=mensaje, vista=vista)
 
+@app.route("/api/usuario", methods=["POST"])
+def api_usuario():
+
+    data = request.get_json()
+    accion = data.get("accion")
+
+    codigo = data.get("codigo", "")
+    nombres = data.get("nombres", "")
+    apellidos = data.get("apellidos", "")
+
+    # VALIDACIÓN
+    if codigo and (not codigo.isdigit() or len(codigo) > 4):
+        return jsonify({"ok": False, "mensaje": "Código inválido"})
+
+    # REGISTRAR
+    if accion == "registrar":
+
+        with open("usuarios.txt", "a", encoding="utf-8") as archivo:
+            archivo.write(f"{codigo},{nombres},{apellidos}\n")
+
+        return jsonify({"ok": True, "mensaje": "Registrado correctamente"})
+
+    # LOGIN
+    elif accion == "login":
+
+        try:
+            with open("usuarios.txt", "r", encoding="utf-8") as archivo:
+
+                for linea in archivo:
+                    datos = linea.strip().split(",")
+
+                    if datos[0] == codigo:
+                        session["usuario"] = {
+                            "codigo": datos[0],
+                            "nombres": datos[1],
+                            "apellidos": datos[2]
+                        }
+
+                        return jsonify({
+                            "ok": True,
+                            "usuario": session["usuario"]
+                        })
+
+            return jsonify({"ok": False, "mensaje": "No encontrado"})
+
+        except FileNotFoundError:
+            return jsonify({"ok": False, "mensaje": "Sin usuarios"})
+
+    # LOGOUT
+    elif accion == "logout":
+        session.pop("usuario", None)
+        return jsonify({"ok": True})
 
 if __name__ == "__main__":
     app.run(debug=True)

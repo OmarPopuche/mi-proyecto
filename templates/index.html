@@ -19,8 +19,21 @@
             <div class="menu-toggle" onclick="toggleMenu()">☰</div>
 
             <div class="menu" id="menu">
-                <a href="#"><img class="icono" src="{{url_for('static', filename='img/usuario.webp') }}"></a>
-                <a href="#"><img class="icono" src="{{url_for('static', filename='img/carrito.png') }}"></a>
+
+                {% if usuario %}
+                    <span style="color:white;">
+                        Hola, {{ usuario.nombres }}
+                    </span>
+                {% endif %}
+
+                <a href="/login">
+                    <img class="icono" src="{{ url_for('static', filename='img/usuario.webp') }}">
+                </a>
+
+                <a href="#" onclick="toggleCarrito()">
+                    <img class="icono" src="{{url_for('static', filename='img/carrito.png') }}">
+                </a>
+
             </div>
         </div>
     </nav>
@@ -46,18 +59,21 @@
                     <img src="{{url_for('static', filename='img/hamburgesa.jpg')}}">
                     <h3>Hamburguesa</h3>
                     <p class="precio">S/. 8</p>
+                    <button class="btn-agregar" onclick="agregarCarrito('Hamburguesa', 8)">Agregar</button>
                 </div>
 
                 <div class="card">
                     <img src="{{url_for('static', filename='img/1a4pollo.webp')}}">
                     <h3>1/4 Pollo a la brasa</h3>
                     <p class="precio">S/. 17</p>
+                    <button class="btn-agregar" onclick="agregarCarrito('1/4 Pollo a la brasa', 17)">Agregar</button>
                 </div>
 
                 <div class="card">
                     <img src="{{url_for('static', filename='img/Salchipapa.webp')}}">
                     <h3>Salchipapa</h3>
                     <p class="precio">S/. 12</p>
+                    <button class="btn-agregar" onclick="agregarCarrito('Salchipapa', 12)">Agregar</button>
                 </div>
             </div>
         </section>
@@ -70,25 +86,43 @@
             <div class="grid">
                 <div class="card promo-card">
                     <img src="{{url_for('static', filename='img/hamburgesa.jpg')}}">
-                    <h3>Hamburguesa</h3>
+                    <h3>Hamburguesa - Promo</h3>
                     <p class="precio">S/. 5</p>
+                    <button class="btn-agregar" onclick="agregarCarrito('Hamburguesa', 5)">Agregar</button>
                 </div>
 
                 <div class="card promo-card">
                     <img src="{{url_for('static', filename='img/1a4pollo.webp')}}">
-                    <h3>1/4 Pollo</h3>
+                    <h3>1/4 Pollo - Promo</h3>
                     <p class="precio">S/. 13</p>
+                    <button class="btn-agregar" onclick="agregarCarrito('1/4 Pollo', 13)">Agregar</button>
                 </div>
 
                 <div class="card promo-card">
                     <img src="{{url_for('static', filename='img/Salchipapa.webp')}}">
-                    <h3>Salchipapa</h3>
+                    <h3>Salchipapa - Promo</h3>
                     <p class="precio">S/. 8</p>
+                    <button class="btn-agregar" onclick="agregarCarrito('Salchipapa', 8)">Agregar</button>
                 </div>
             </div>
         </section>
 
+        <!-- CARRITO -->
+        <div id="carrito" class="carrito">
+            <div class="carrito-header">
+                <h3>Carrito</h3>
+                <span class="cerrar" onclick="toggleCarrito()">✖</span>
+            </div>
+
+            <div id="carrito-items"></div>
+
+            <div class="carrito-footer">
+                <p>Total: S/ <span id="total">0</span></p>
+            </div>
+        </div>
+
     </main>
 
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 </body>
 </html>

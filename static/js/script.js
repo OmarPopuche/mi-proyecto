@@ -27,6 +27,7 @@ async function login() {
             data.usuario.nombres + " " + data.usuario.apellidos;
 
         mostrarVista("usuario");
+        toggleLogin();
 
     } else {
         alert(data.mensaje);
@@ -41,6 +42,19 @@ function mostrarVista(vista) {
     document.getElementById("vista-usuario").style.display = "none";
 
     document.getElementById("vista-" + vista).style.display = "block";
+}
+
+function toggleLogin() {
+    const panel = document.getElementById("panel-login");
+    panel.classList.toggle("active");
+}
+
+function volver() {
+    mostrarVista("inicial");
+}
+
+function modoInvitado() {
+    toggleLogin();
 }
 
 async function registrar() {

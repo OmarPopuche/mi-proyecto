@@ -315,37 +315,43 @@
     </div>
   </section>
 
-  <!-- ==========================================
-       SECCIÓN 4: Productos (CRUD de inventario)
-       NUEVO — persistido en productos.txt
-  =========================================== -->
-  <section id="seccion-productos" class="dash-seccion">
+  <!--
+  =============================================
+  SECCIÓN 4: Gestión de Productos
+  ✅ MODIFICADO: campo "categoria" reemplazado
+  por "imagen_url" en el formulario y en la tabla.
+  =============================================
+-->
+<section id="seccion-productos" class="dash-seccion">
   <h2 class="dash-titulo">🍟 Gestión de Productos (Menú)</h2>
 
-  <!-- Formulario para agregar -->
+  <!-- Formulario para agregar producto -->
   <div class="form-card">
     <h3>➕ Agregar al Menú</h3>
     <div class="form-row">
 
       <div class="form-grupo">
         <label for="prod-nombre">Nombre del plato</label>
-        <input type="text" id="prod-nombre" placeholder="Ej: Hamburguesa Doble" maxlength="50">
+        <input type="text" id="prod-nombre"
+               placeholder="Ej: Hamburguesa Doble" maxlength="60">
       </div>
 
       <div class="form-grupo">
         <label for="prod-precio">Precio (S/)</label>
-        <input type="number" id="prod-precio" placeholder="Ej: 12.50" min="0.5" step="0.5">
+        <input type="number" id="prod-precio"
+               placeholder="Ej: 12.50" min="0.5" step="0.5">
       </div>
 
-      <div class="form-grupo">
-        <label for="prod-categoria">Categoría</label>
-        <select id="prod-categoria">
-          <option value="Principales">Principales</option>
-          <option value="Complementos">Complementos</option>
-          <option value="Bebidas">Bebidas</option>
-          <option value="Postres">Postres</option>
-          <option value="Combos">Combos</option>
-        </select>
+      <!--
+        ✅ NUEVO: Campo URL de imagen.
+        Reemplaza al <select> de categoría anterior.
+        El usuario pega un enlace directo a la imagen del plato.
+        El backend valida que empiece con "http".
+      -->
+      <div class="form-grupo" style="flex: 2; min-width: 260px;">
+        <label for="prod-imagen">Link de la imagen (URL)</label>
+        <input type="url" id="prod-imagen"
+               placeholder="https://ejemplo.com/imagen.jpg">
       </div>
 
       <div class="form-grupo form-grupo-boton">
@@ -363,24 +369,43 @@
       <thead>
         <tr>
           <th>ID</th>
+          <th>Imagen</th>
           <th>Nombre</th>
           <th>Precio</th>
-          <th>Categoría</th>
+          <th>URL</th>
           <th>Acción</th>
         </tr>
       </thead>
       <tbody id="tbody-productos">
         {% if productos %}
           {% for p in productos %}
-          <!--
-            ✅ Usamos p.line_index para identificar la fila DOM
-            y como argumento al endpoint DELETE /api/productos/<line_index>
-          -->
           <tr id="fila-producto-{{ p.line_index }}">
             <td><code>{{ p.id_producto }}</code></td>
+
+            <!--
+              ✅ Preview de imagen directo desde la URL del txt.
+              onerror: si la URL falla, muestra un placeholder.
+            -->
+            <td>
+              <img
+                src="{{ p.imagen_url }}"
+                alt="{{ p.nombre }}"
+                class="prod-thumb"
+                onerror="this.src='/static/img/hamburgesa.jpg'"
+              >
+            </td>
+
             <td>{{ p.nombre }}</td>
             <td>S/ {{ "%.2f"|format(p.precio) }}</td>
-            <td><span class="badge-categoria">{{ p.categoria }}</span></td>
+
+            <!-- URL truncada para no romper el layout -->
+            <td>
+              <a href="{{ p.imagen_url }}" target="_blank"
+                 class="link-url" title="{{ p.imagen_url }}">
+                {{ p.imagen_url[:35] }}{% if p.imagen_url|length > 35 %}…{% endif %}
+              </a>
+            </td>
+
             <td>
               <button
                 class="btn-peligro-sm"
@@ -392,8 +417,8 @@
           {% endfor %}
         {% else %}
           <tr id="fila-sin-productos">
-            <td colspan="5" class="estado-vacio">
-              No hay productos. ¡Agrega el primero usando el formulario de arriba!
+            <td colspan="6" class="estado-vacio">
+              No hay productos. ¡Agrega el primero con el formulario de arriba!
             </td>
           </tr>
         {% endif %}

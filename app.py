@@ -1,6 +1,11 @@
 # ============================================================
-# app.py — FastFoot Backend (versión corregida + productos)
-# Omar Vilela | Full-Stack Engineer
+# app.py — FastFoot Backend
+# CAMBIOS EN ESTA VERSIÓN:
+#   1. leer_productos(): campo 4 ahora es "imagen_url", no "categoria"
+#   2. guardar_productos(): serializa imagen_url en lugar de categoria
+#   3. api_productos_crear(): recibe y valida "imagen_url" en el body
+#   4. Ruta "/": sin cambios, ya pasa productos al template
+#   5. Ruta "/dashboard": sin cambios, el JOIN ya funciona correctamente
 # ============================================================
 
 import os
@@ -13,17 +18,12 @@ from flask import (
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "dev_key_cambiar_en_produccion")
 
-# ============================================================
-# 📂 CONSTANTES
-# ============================================================
 ARCHIVO_USUARIOS  = "usuarios.txt"
 ARCHIVO_PEDIDOS   = "pedidos.txt"
 ARCHIVO_PRODUCTOS = "productos.txt"
 
 
-# ============================================================
-# 📂 HELPERS — Usuarios (sin cambios)
-# ============================================================
+# ── Helpers de usuarios (sin cambios) ────────────────────────
 
 def leer_usuarios() -> list[dict]:
     usuarios = []
@@ -41,19 +41,16 @@ def leer_usuarios() -> list[dict]:
         pass
     return usuarios
 
-
 def buscar_usuario(codigo: str) -> dict | None:
     for u in leer_usuarios():
         if u["codigo"] == codigo:
             return u
     return None
 
-
 def guardar_usuarios(usuarios: list[dict]) -> None:
     with open(ARCHIVO_USUARIOS, "w", encoding="utf-8") as f:
         for u in usuarios:
             f.write(f"{u['codigo']},{u['nombres']},{u['apellidos']}\n")
-
 
 def validar_codigo(codigo: str) -> str | None:
     if not codigo:
@@ -65,48 +62,26 @@ def validar_codigo(codigo: str) -> str | None:
     return None
 
 
-# ============================================================
-# 📂 HELPERS — Pedidos
-#
-# ✅ CORRECCIÓN CENTRAL: usamos enumerate() para asignar
-# el número de línea real (line_index) a cada pedido.
-#
-# Este índice representa la posición EXACTA en el archivo txt,
-# por lo que el backend puede localizar y modificar esa línea
-# sin ambigüedad, incluso si hay pedidos del mismo usuario.
-#
-# Formato del txt (6 campos):
-#   codigo_usuario, producto, cantidad, precio, estado, timestamp
-#
-# Compatibilidad con datos legacy (4 campos):
-#   estado = "espera", timestamp = "N/D"
-# ============================================================
+# ── Helpers de pedidos (sin cambios) ─────────────────────────
 
 def leer_pedidos() -> list[dict]:
     """
-    Lee pedidos.txt y asigna a cada pedido su índice de línea
-    como 'line_index'. Este valor es el que el frontend devuelve
-    al backend para identificar qué línea modificar.
+    Lee pedidos.txt con enumerate() para asignar line_index.
+    Formato: codigo_usuario, producto, cantidad, precio, estado, timestamp
+    Compatibilidad legacy (4 campos): estado="espera", timestamp="N/D"
     """
     pedidos = []
     try:
         with open(ARCHIVO_PEDIDOS, "r", encoding="utf-8") as f:
             for line_index, linea in enumerate(f):
-                # ── Ignorar líneas en blanco o malformadas ──
                 linea_limpia = linea.strip()
                 if not linea_limpia:
                     continue
-
                 partes = linea_limpia.split(",")
                 if len(partes) < 4:
                     continue
-
                 pedidos.append({
-                    # ✅ line_index es el número de línea en el archivo.
-                    # Es el único identificador confiable para localizar
-                    # el pedido sin necesidad de un campo ID extra en el txt.
                     "line_index":     line_index,
-
                     "codigo_usuario": partes[0].strip(),
                     "producto":       partes[1].strip(),
                     "cantidad":       int(partes[2].strip()),
@@ -118,28 +93,20 @@ def leer_pedidos() -> list[dict]:
         pass
     return pedidos
 
-
 def guardar_pedidos(pedidos: list[dict]) -> None:
-    """Sobreescribe pedidos.txt con el formato completo de 6 campos."""
     with open(ARCHIVO_PEDIDOS, "w", encoding="utf-8") as f:
         for p in pedidos:
             f.write(
-                f"{p['codigo_usuario']},"
-                f"{p['producto']},"
-                f"{p['cantidad']},"
-                f"{p['precio']},"
-                f"{p['estado']},"
-                f"{p['timestamp']}\n"
+                f"{p['codigo_usuario']},{p['producto']},"
+                f"{p['cantidad']},{p['precio']},"
+                f"{p['estado']},{p['timestamp']}\n"
             )
 
-
-def enriquecer_pedidos_con_usuarios(
-    pedidos: list[dict],
-    usuarios: list[dict]
-) -> list[dict]:
+def enriquecer_pedidos_con_usuarios(pedidos, usuarios) -> list[dict]:
     """
-    JOIN en memoria entre pedidos y usuarios.
-    Agrega 'nombre_usuario' y 'subtotal' a cada pedido.
+    JOIN en memoria pedidos ↔ usuarios.
+    Agrega nombre_usuario y subtotal a cada pedido.
+    Este JOIN es el que alimenta los gráficos del dashboard.
     """
     indice = {u["codigo"]: u for u in usuarios}
     for p in pedidos:
@@ -151,23 +118,26 @@ def enriquecer_pedidos_con_usuarios(
     return pedidos
 
 
+# ── Helpers de productos — MODIFICADOS ───────────────────────
+
 # ============================================================
-# 📂 HELPERS — Productos
+# HELPERS — Productos  (reemplaza las funciones del Gist)
 #
-# Formato de productos.txt:
-#   ID_Producto, Nombre_Producto, Precio, Categoria
-#   Ej: P01,Pollo a la brasa,17.0,Principales
+# CAMBIO: el campo 4 del txt pasa de "categoria" a "imagen_url".
 #
-# ✅ Por qué usamos "P01" y no índice de línea como ID:
-#   El índice de línea cambia si se eliminan productos.
-#   Un ID fijo tipo "P01" persiste en el archivo y es seguro
-#   para mostrar al cliente y referenciar en el carrito.
+# Nuevo formato de productos.txt:
+#   id_producto, nombre, precio, imagen_url
+#   P01,Pollo a la brasa,17.0,https://i.imgur.com/abc.jpg
+#
+# Retrocompatibilidad: si el campo 4 NO empieza con "http"
+# se trata como categoría legacy y imagen_url queda vacío.
+# Así los datos ya guardados no rompen la lectura.
 # ============================================================
 
 def leer_productos() -> list[dict]:
     """
-    Lee productos.txt.
-    Retorna lista de dicts con line_index para operaciones de eliminación.
+    Lee productos.txt con enumerate() para obtener line_index.
+    Detecta automáticamente si el campo 4 es URL o categoría antigua.
     """
     productos = []
     try:
@@ -180,13 +150,22 @@ def leer_productos() -> list[dict]:
                 if len(partes) < 3:
                     continue
 
+                campo4 = partes[3].strip() if len(partes) > 3 else ""
+
+                # ✅ Distinguir URL de categoría legacy
+                if campo4.startswith("http"):
+                    imagen_url = campo4
+                else:
+                    # Dato legacy: imagen vacía, el frontend usará fallback
+                    imagen_url = ""
+
                 productos.append({
-                    # line_index para eliminación (igual que pedidos)
-                    "line_index": line_index,
-                    "id_producto": partes[0].strip(),       # Ej: "P01"
+                    "line_index":  line_index,
+                    "id_producto": partes[0].strip(),
                     "nombre":      partes[1].strip(),
                     "precio":      float(partes[2].strip()),
-                    "categoria":   partes[3].strip() if len(partes) > 3 else "General",
+                    # ✅ Clave "imagen_url" — la que el frontend consume
+                    "imagen_url":  imagen_url,
                 })
     except FileNotFoundError:
         pass
@@ -194,27 +173,110 @@ def leer_productos() -> list[dict]:
 
 
 def guardar_productos(productos: list[dict]) -> None:
+    """Serializa con imagen_url en campo 4."""
     with open(ARCHIVO_PRODUCTOS, "w", encoding="utf-8") as f:
         for p in productos:
             f.write(
                 f"{p['id_producto']},"
                 f"{p['nombre']},"
                 f"{p['precio']},"
-                f"{p['categoria']}\n"
+                f"{p['imagen_url']}\n"
             )
 
 
+# ── API Productos ─────────────────────────────────────────────
+
+@app.route("/api/productos", methods=["GET"])
+def api_productos_listar():
+    """
+    Público. Retorna la lista con la clave 'imagen_url' garantizada.
+    Es el contrato que script.js espera en MenuDinamico.init().
+    """
+    return jsonify({"ok": True, "productos": leer_productos()})
+
+
+@app.route("/api/productos", methods=["POST"])
+def api_productos_crear():
+    """
+    ✅ Recibe { nombre, precio, imagen_url } — ya no "categoria".
+    Solo admin 001.
+    """
+    err = verificar_admin()
+    if err:
+        return err
+
+    data       = request.get_json(silent=True)
+    nombre     = data.get("nombre", "").strip().replace(",", "")
+    imagen_url = data.get("imagen_url", "").strip()
+
+    if not nombre:
+        return jsonify({"ok": False, "mensaje": "El nombre es obligatorio."})
+
+    # Validar que sea una URL real
+    if not imagen_url.startswith("http"):
+        return jsonify({"ok": False, "mensaje": "La URL debe empezar con http o https."})
+
+    try:
+        precio = round(float(data.get("precio")), 2)
+        if precio <= 0:
+            raise ValueError
+    except (TypeError, ValueError):
+        return jsonify({"ok": False, "mensaje": "Precio inválido."})
+
+    if any(p["nombre"].lower() == nombre.lower() for p in leer_productos()):
+        return jsonify({"ok": False, "mensaje": f"Ya existe '{nombre}' en el menú."})
+
+    nuevo_id = generar_id_producto()
+
+    with open(ARCHIVO_PRODUCTOS, "a", encoding="utf-8") as f:
+        f.write(f"{nuevo_id},{nombre},{precio},{imagen_url}\n")
+
+    # Releer para obtener el line_index real del ítem recién escrito
+    producto_creado = leer_productos()[-1]
+
+    return jsonify({
+        "ok":       True,
+        "mensaje":  f"'{nombre}' agregado al menú.",
+        "producto": producto_creado   # incluye imagen_url e line_index correctos
+    })
+
+
+@app.route("/api/productos/<int:line_index>", methods=["DELETE"])
+def api_productos_eliminar(line_index):
+    """Sin cambios respecto al Gist — funciona igual."""
+    err = verificar_admin()
+    if err:
+        return err
+    try:
+        with open(ARCHIVO_PRODUCTOS, "r", encoding="utf-8") as f:
+            lineas = f.readlines()
+    except FileNotFoundError:
+        return jsonify({"ok": False, "mensaje": "Archivo no encontrado."}), 404
+    if line_index < 0 or line_index >= len(lineas):
+        return jsonify({"ok": False, "mensaje": "Producto no encontrado."}), 404
+    partes           = lineas[line_index].strip().split(",")
+    nombre_eliminado = partes[1].strip() if len(partes) > 1 else "Desconocido"
+    del lineas[line_index]
+    with open(ARCHIVO_PRODUCTOS, "w", encoding="utf-8") as f:
+        f.writelines(lineas)
+    return jsonify({"ok": True, "mensaje": f"'{nombre_eliminado}' eliminado del menú."})
+
+def guardar_productos(productos: list[dict]) -> None:
+    """Serializa productos con el nuevo formato de 4 campos."""
+    with open(ARCHIVO_PRODUCTOS, "w", encoding="utf-8") as f:
+        for p in productos:
+            f.write(
+                f"{p['id_producto']},"
+                f"{p['nombre']},"
+                f"{p['precio']},"
+                f"{p['imagen_url']}\n"
+            )
+
 def generar_id_producto() -> str:
-    """
-    Genera el próximo ID de producto correlativo (P01, P02, ...).
-    Lee el último ID del archivo y suma 1.
-    Si no hay productos, empieza en P01.
-    """
+    """Genera ID correlativo P01, P02, ..."""
     productos = leer_productos()
     if not productos:
         return "P01"
-
-    # Extraer el número del último ID (P01 → 1)
     try:
         ultimo_num = int(productos[-1]["id_producto"][1:])
         return f"P{str(ultimo_num + 1).zfill(2)}"
@@ -222,15 +284,9 @@ def generar_id_producto() -> str:
         return f"P{str(len(productos) + 1).zfill(2)}"
 
 
-# ============================================================
-# 🔒 HELPER — Verificar admin
-# ============================================================
+# ── Verificación de admin (sin cambios) ──────────────────────
 
 def verificar_admin():
-    """
-    Verifica sesión de admin (código 001).
-    Retorna tupla (json_response, status) si falla, None si pasa.
-    """
     usuario = session.get("usuario")
     if not usuario:
         return jsonify({"ok": False, "mensaje": "No hay sesión activa."}), 401
@@ -239,26 +295,19 @@ def verificar_admin():
     return None
 
 
-# ============================================================
-# 🔹 RUTAS
-# ============================================================
+# ── Rutas ────────────────────────────────────────────────────
 
 @app.route("/")
 def inicio():
-    """
-    Página principal.
-    ✅ NUEVO: pasa la lista de productos al template para
-    que el menú sea dinámico (ya no hardcodeado en el HTML).
-    """
-    productos = leer_productos()
+    """Pasa productos al template para el menú dinámico."""
     return render_template(
         "index.html",
         usuario=session.get("usuario"),
-        productos=productos
+        productos=leer_productos()
     )
 
 
-# ── API Usuarios ─────────────────────────────────────────────
+# ── API Usuarios (sin cambios) ────────────────────────────────
 
 @app.route("/api/usuario", methods=["POST"])
 def api_usuario():
@@ -336,186 +385,57 @@ def api_usuario():
     return jsonify({"ok": False, "mensaje": "Acción no reconocida."}), 400
 
 
-# ── API Pedidos ───────────────────────────────────────────────
+# ── API Pedidos (sin cambios) ─────────────────────────────────
 
 @app.route("/api/pedido", methods=["POST"])
 def api_pedido():
-    """Guarda un pedido nuevo con estado 'espera'."""
     usuario = session.get("usuario")
     if not usuario:
         return jsonify({"ok": False, "mensaje": "Debes iniciar sesión para pedir."}), 401
-
     data = request.get_json(silent=True)
     if not data or not data.get("items"):
         return jsonify({"ok": False, "mensaje": "Carrito vacío o datos inválidos."}), 400
-
     ahora = datetime.now().strftime("%Y-%m-%d %H:%M")
-
     with open(ARCHIVO_PEDIDOS, "a", encoding="utf-8") as f:
         for item in data["items"]:
             nombre   = str(item.get("nombre", "")).replace(",", "")
             cantidad = int(item.get("cantidad", 1))
             precio   = float(item.get("precio", 0))
             f.write(f"{usuario['codigo']},{nombre},{cantidad},{precio},espera,{ahora}\n")
-
     return jsonify({"ok": True, "mensaje": "¡Pedido confirmado!"})
-
 
 @app.route("/api/pedido/estado", methods=["POST"])
 def api_pedido_estado():
-    """
-    ✅ CORRECCIÓN: Cambia el estado de un pedido usando line_index.
-
-    Flujo:
-      1. Frontend envía { line_index: N, estado: "confirmado" }
-      2. Leemos todas las líneas del archivo como texto crudo
-      3. Modificamos solo la línea N
-      4. Reescribimos el archivo completo
-
-    ¿Por qué leer líneas crudas y no leer_pedidos()?
-    Porque leer_pedidos() filtra líneas vacías y puede
-    desincronizar el índice. Aquí necesitamos fidelidad total
-    con el número de línea real del archivo.
-    """
+    """Cambia el estado de una línea exacta de pedidos.txt."""
     err = verificar_admin()
     if err:
         return err
-
-    data        = request.get_json(silent=True)
-    line_index  = data.get("line_index")
+    data         = request.get_json(silent=True)
+    line_index   = data.get("line_index")
     nuevo_estado = data.get("estado", "").strip()
-
-    # Validar estado
     if nuevo_estado not in ("espera", "confirmado"):
         return jsonify({"ok": False, "mensaje": "Estado inválido."}), 400
-
-    # Validar que line_index sea un entero
     if not isinstance(line_index, int) or line_index < 0:
-        return jsonify({"ok": False, "mensaje": "Identificador de pedido inválido."}), 400
-
-    # ── Leer el archivo como líneas crudas ──
+        return jsonify({"ok": False, "mensaje": "Identificador inválido."}), 400
     try:
         with open(ARCHIVO_PEDIDOS, "r", encoding="utf-8") as f:
-            lineas = f.readlines()   # Conserva \n al final de cada línea
-    except FileNotFoundError:
-        return jsonify({"ok": False, "mensaje": "Archivo de pedidos no encontrado."}), 404
-
-    # Verificar que el índice existe
-    if line_index >= len(lineas):
-        return jsonify({"ok": False, "mensaje": "Pedido no encontrado."}), 404
-
-    # ── Parsear y modificar solo la línea indicada ──
-    partes = lineas[line_index].strip().split(",")
-
-    if len(partes) < 4:
-        return jsonify({"ok": False, "mensaje": "Línea de pedido malformada."}), 400
-
-    # Reconstruir la línea con el nuevo estado
-    # Aseguramos que siempre haya 6 campos aunque sea dato legacy
-    codigo_usuario = partes[0].strip()
-    producto       = partes[1].strip()
-    cantidad       = partes[2].strip()
-    precio         = partes[3].strip()
-    timestamp      = partes[5].strip() if len(partes) > 5 else "N/D"
-
-    lineas[line_index] = f"{codigo_usuario},{producto},{cantidad},{precio},{nuevo_estado},{timestamp}\n"
-
-    # ── Reescribir el archivo completo ──
-    with open(ARCHIVO_PEDIDOS, "w", encoding="utf-8") as f:
-        f.writelines(lineas)
-
-    return jsonify({"ok": True, "mensaje": f"Pedido actualizado a '{nuevo_estado}'."})
-
-
-# ── API Productos ─────────────────────────────────────────────
-
-@app.route("/api/productos", methods=["GET"])
-def api_productos_listar():
-    """
-    Lista todos los productos.
-    Público: lo usa el frontend para renderizar el menú dinámico.
-    """
-    return jsonify({"ok": True, "productos": leer_productos()})
-
-
-@app.route("/api/productos", methods=["POST"])
-def api_productos_crear():
-    """
-    Crea un producto nuevo en productos.txt.
-    Solo admin 001.
-    Body: { nombre, precio, categoria }
-    """
-    err = verificar_admin()
-    if err:
-        return err
-
-    data      = request.get_json(silent=True)
-    nombre    = data.get("nombre", "").strip().replace(",", "")
-    categoria = data.get("categoria", "General").strip().replace(",", "")
-
-    if not nombre:
-        return jsonify({"ok": False, "mensaje": "El nombre es obligatorio."})
-
-    try:
-        precio = round(float(data.get("precio")), 2)
-        if precio <= 0:
-            raise ValueError
-    except (TypeError, ValueError):
-        return jsonify({"ok": False, "mensaje": "Precio inválido."})
-
-    # Verificar duplicado por nombre (case-insensitive)
-    if any(p["nombre"].lower() == nombre.lower() for p in leer_productos()):
-        return jsonify({"ok": False, "mensaje": f"Ya existe '{nombre}' en el menú."})
-
-    nuevo_id = generar_id_producto()
-
-    with open(ARCHIVO_PRODUCTOS, "a", encoding="utf-8") as f:
-        f.write(f"{nuevo_id},{nombre},{precio},{categoria}\n")
-
-    producto_creado = {
-        "line_index":  len(leer_productos()) - 1,
-        "id_producto": nuevo_id,
-        "nombre":      nombre,
-        "precio":      precio,
-        "categoria":   categoria,
-    }
-
-    return jsonify({"ok": True, "mensaje": f"'{nombre}' agregado al menú.", "producto": producto_creado})
-
-
-@app.route("/api/productos/<int:line_index>", methods=["DELETE"])
-def api_productos_eliminar(line_index):
-    """
-    Elimina un producto por su line_index.
-    ✅ Mismo patrón que pedidos: leer líneas crudas,
-    quitar la línea N, reescribir el archivo.
-    Solo admin 001.
-    """
-    err = verificar_admin()
-    if err:
-        return err
-
-    try:
-        with open(ARCHIVO_PRODUCTOS, "r", encoding="utf-8") as f:
             lineas = f.readlines()
     except FileNotFoundError:
-        return jsonify({"ok": False, "mensaje": "Archivo de productos no encontrado."}), 404
-
-    if line_index < 0 or line_index >= len(lineas):
-        return jsonify({"ok": False, "mensaje": "Producto no encontrado."}), 404
-
-    # Identificar el nombre antes de eliminar (para el mensaje)
+        return jsonify({"ok": False, "mensaje": "Archivo no encontrado."}), 404
+    if line_index >= len(lineas):
+        return jsonify({"ok": False, "mensaje": "Pedido no encontrado."}), 404
     partes = lineas[line_index].strip().split(",")
-    nombre_eliminado = partes[1].strip() if len(partes) > 1 else "Desconocido"
-
-    # Eliminar la línea y reescribir
-    del lineas[line_index]
-
-    with open(ARCHIVO_PRODUCTOS, "w", encoding="utf-8") as f:
+    if len(partes) < 4:
+        return jsonify({"ok": False, "mensaje": "Línea malformada."}), 400
+    timestamp = partes[5].strip() if len(partes) > 5 else "N/D"
+    lineas[line_index] = (
+        f"{partes[0].strip()},{partes[1].strip()},"
+        f"{partes[2].strip()},{partes[3].strip()},"
+        f"{nuevo_estado},{timestamp}\n"
+    )
+    with open(ARCHIVO_PEDIDOS, "w", encoding="utf-8") as f:
         f.writelines(lineas)
-
-    return jsonify({"ok": True, "mensaje": f"'{nombre_eliminado}' eliminado del menú."})
-
+    return jsonify({"ok": True, "mensaje": f"Pedido actualizado a '{nuevo_estado}'."})
 
 # ── Dashboard ─────────────────────────────────────────────────
 
@@ -530,6 +450,7 @@ def dashboard():
     pedidos   = leer_pedidos()
     productos = leer_productos()
 
+    # ✅ JOIN que alimenta los gráficos — no tocar
     pedidos_enriquecidos = enriquecer_pedidos_con_usuarios(pedidos, usuarios)
 
     pedidos_espera      = [p for p in pedidos_enriquecidos if p["estado"] == "espera"]
@@ -539,19 +460,22 @@ def dashboard():
     total_pedidos  = len(pedidos_enriquecidos)
     total_usuarios = len(usuarios)
 
-    ventas_por_usuario = {}
+    # ── Datos para Chart.js: ventas agrupadas por usuario ──
+    # Clave = "001 - Omar Vilela", valor = total S/ gastado
+    ventas_por_usuario: dict[str, float] = {}
     for p in pedidos_enriquecidos:
         clave = f"{p['codigo_usuario']} - {p['nombre_usuario']}"
         ventas_por_usuario[clave] = round(
             ventas_por_usuario.get(clave, 0) + p["subtotal"], 2
         )
 
-    resumen_productos = {}
+    # ── Resumen por producto para la tabla ──
+    resumen_productos: dict[str, dict] = {}
     for p in pedidos_enriquecidos:
         if p["producto"] not in resumen_productos:
             resumen_productos[p["producto"]] = {"cantidad": 0, "total": 0.0}
         resumen_productos[p["producto"]]["cantidad"] += p["cantidad"]
-        resumen_productos[p["producto"]]["total"]     = round(
+        resumen_productos[p["producto"]]["total"] = round(
             resumen_productos[p["producto"]]["total"] + p["subtotal"], 2
         )
 
@@ -566,6 +490,7 @@ def dashboard():
         total_pedidos       = total_pedidos,
         total_usuarios      = total_usuarios,
         resumen_productos   = resumen_productos,
+        # Listas paralelas que Chart.js consume vía data-*
         chart_labels        = list(ventas_por_usuario.keys()),
         chart_data          = list(ventas_por_usuario.values()),
     )

@@ -423,3 +423,26 @@
   .stats-grid   { grid-template-columns: repeat(2, 1fr); }
   .form-row     { flex-direction: column; }
 }
+
+/* ── Preview de imagen en tabla de productos ── */
+.prod-thumb {
+  width: 52px;
+  height: 44px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid #eee;
+  display: block;
+}
+
+/* ── URL truncada con ellipsis ── */
+.link-url {
+  color: #06b1db;
+  font-size: 12px;
+  text-decoration: none;
+  display: block;
+  max-width: 200px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.link-url:hover { text-decoration: underline; }

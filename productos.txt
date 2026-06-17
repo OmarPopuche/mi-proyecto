@@ -1,5 +1,5 @@
-P01,1/4 Pollo a la brasa,17.0,Principales
-P03,Hamburguesa Promo,5.0,CombosP04,Big Mac Mediana,18.0,Combos
-P04,Salchipapa,12.0,Complementos
-P05,Salchipapa2,13.0,Complementos
-P06,Salchipapa3,8.0,Combos
+P01,Pollo a la brasa,17.0,https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?w=500
+P02,Salchipapa,12.0,https://images.unsplash.com/photo-1576107232684-1279f390859f?w=500
+P03,Hamburguesa Promo,5.0,https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=500P04,Salchipapa2,16.0,https://images.unsplash.com/photo-1576107232684-1279f390859f?w=500
+P04,Salchipapa3,19.0,https://i.ytimg.com/vi/tfd3c8J4GYQ/hq720.jpg?sqp=-oaymwE7CK4FEIIDSFryq4qpAy0IARUAAAAAGAElAADIQj0AgKJD8AEB-AH-CYAC0AWKAgwIABABGHIgVyggMA8=&rs=AOn4CLBSkz1bCAh8TM5XqJOLrdNpVldVrA
+P05,Pack 3 Perros Calientes,21.0,https://www.elespectador.com/resizer/v2/MSBTYIMCLVDURMKKV6Q3E6IBFY.jpg?auth=a17831bece43199a6fc31e030ff5659a273e10922bcf225955cae5b5f063a817&width=920&height=613&smart=true&quality=60

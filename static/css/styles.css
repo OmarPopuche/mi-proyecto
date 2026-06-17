@@ -366,3 +366,112 @@ h2 {
         padding: 15px;
     }
 }
+
+/* =============================================
+   MEJORAS ADICIONALES — FastFoot
+   Agrega esto al final de tu styles.css actual
+============================================= */
+
+/* Saludo en navbar */
+.saludo-usuario {
+  color: white;
+  font-size: 14px;
+  align-self: center;
+}
+
+/* Link al dashboard en navbar */
+.btn-dashboard {
+  color: white;
+  background: rgba(255,255,255,0.2);
+  padding: 6px 12px;
+  border-radius: 20px;
+  text-decoration: none;
+  font-size: 13px;
+  transition: 0.3s;
+  align-self: center;
+}
+
+.btn-dashboard:hover {
+  background: rgba(255,255,255,0.35);
+}
+
+/* Badge del carrito */
+.badge {
+  position: absolute;       /* Requiere que el padre <a> tenga position:relative */
+  top: -5px;
+  right: -5px;
+  background: #ff3b3b;
+  color: white;
+  font-size: 10px;
+  font-weight: bold;
+  border-radius: 50%;
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Para que el badge se posicione bien, el <a> del carrito necesita esto */
+.menu a {
+  position: relative;
+}
+
+/* Labels en el panel de login */
+.panel-login label {
+  font-size: 12px;
+  color: #555;
+  display: block;
+  margin: 8px 0 2px;
+}
+
+/* Mensaje de feedback en el panel */
+.mensaje-panel {
+  padding: 8px 10px;
+  border-radius: 6px;
+  font-size: 13px;
+  background: #f0f9ff;
+  margin-bottom: 10px;
+}
+
+/* Botón secundario (Volver) */
+.btn-secundario {
+  background: #aaa !important;
+}
+
+.btn-secundario:hover {
+  background: #888 !important;
+}
+
+/* Botón de peligro (Cerrar sesión) */
+.btn-peligro {
+  background: #ff3b3b !important;
+}
+
+/* Botón confirmar pedido en el carrito */
+.btn-confirmar {
+  width: 100%;
+  padding: 12px;
+  background: linear-gradient(135deg, #06b1db, #048aad);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.3s;
+  margin-top: 10px;
+}
+
+.btn-confirmar:hover {
+  transform: scale(1.03);
+  box-shadow: 0 5px 15px rgba(6, 177, 219, 0.4);
+}
+
+/* Carrito vacío */
+.carrito-vacio {
+  text-align: center;
+  color: #aaa;
+  padding: 30px 15px;
+  font-size: 14px;
+}

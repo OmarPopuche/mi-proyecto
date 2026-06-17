@@ -1,0 +1,5 @@
+P01,1/4 Pollo a la brasa,17.0,Principales
+P03,Hamburguesa Promo,5.0,CombosP04,Big Mac Mediana,18.0,Combos
+P04,Salchipapa,12.0,Complementos
+P05,Salchipapa2,13.0,Complementos
+P06,Salchipapa3,8.0,Combos

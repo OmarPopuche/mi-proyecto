@@ -1,0 +1,10 @@
+001,Pollo a la brasa,1,17.0,confirmado,N/D
+001,Salchipapa,1,12.0,confirmado,N/D
+001,Salchipapa Promo,1,8.0,confirmado,N/D
+001,Pollo Promo,1,13.0,confirmado,N/D
+002,Salchipapa,1,12.0,confirmado,N/D
+002,Pollo a la brasa,1,17.0,confirmado,N/D
+002,Hamburguesa Promo,1,5.0,confirmado,N/D
+001,Salchipapa,1,12.0,espera,2026-06-16 14:30
+001,Hamburguesa Promo,1,5.0,espera,2026-06-16 14:30
+004,Salchipapa,1,12.0,espera,2026-06-16 14:34

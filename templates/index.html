@@ -1,173 +1,203 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FastFoot</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FastFoot</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
 </head>
 <body>
 
-    <!-- NAVBAR -->
-    <nav class="navbar">
-        <div class="contenedor">
-            <a href="/" class="logo-container">
-                <img class="logo" src="{{url_for('static', filename='img/logo.png') }}">
-                <span>FastFoot</span>
-            </a>
+<!-- =============================================
+     NAVBAR
+     Se pasa `usuario` desde Flask al template.
+     Mostramos el nombre si hay sesión activa,
+     y el link al dashboard solo para código 001.
+============================================= -->
+<nav class="navbar">
+  <div class="contenedor">
+    <a href="/" class="logo-container">
+      <img class="logo" src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo FastFoot">
+      <span>FastFoot</span>
+    </a>
 
-            <div class="menu-toggle" onclick="toggleMenu()">☰</div>
+    <div class="menu-toggle" onclick="toggleMenu()">☰</div>
 
-            <div class="menu" id="menu">
+    <div class="menu" id="menu">
 
-                {% if usuario %}
-                    <span style="color:white;">
-                        Hola, {{ usuario.nombres }}
-                    </span>
-                {% endif %}
+      {% if usuario %}
+        <span class="saludo-usuario">Hola, {{ usuario.nombres }}</span>
 
-                <a href="#" onclick="toggleLogin()">
-                    <img class="icono" src="{{ url_for('static', filename='img/usuario.webp') }}">
-                </a>
+        {# ✅ Link al dashboard SOLO para el admin 001 #}
+        {% if usuario.codigo == "001" %}
+          <a href="/dashboard" class="btn-dashboard">⚙️ Dashboard</a>
+        {% endif %}
+      {% endif %}
 
-                <a href="#" onclick="toggleCarrito()">
-                    <img class="icono" src="{{url_for('static', filename='img/carrito.png') }}">
-                </a>
+      <a href="#" onclick="toggleLogin()" aria-label="Cuenta de usuario">
+        <img class="icono" src="{{ url_for('static', filename='img/usuario.webp') }}" alt="Usuario">
+      </a>
 
-            </div>
-        </div>
-    </nav>
-
-    <!-- PANEL LOGIN -->
-    <div id="panel-login" class="panel-login">
-
-        <div class="panel-header">
-            <h3>Usuario</h3>
-            <span onclick="toggleLogin()">✖</span>
-        </div>
-
-        <div id="login-contenido">
-
-            <!-- INICIO -->
-            <div id="vista-inicial">
-                <button onclick="mostrarVista('login')">Iniciar Sesión</button>
-                <button onclick="mostrarVista('registro')">Registrarse</button>
-                <button onclick="modoInvitado()">Continuar como invitado</button>
-            </div>
-
-            <!-- LOGIN -->
-            <div id="vista-login" style="display:none;">
-                <input type="text" id="login-codigo" placeholder="Código"><br>
-                <button onclick="login()">Ingresar</button>
-                <button onclick="volver()">Volver</button>
-            </div>
-
-            <!-- REGISTRO -->
-            <div id="vista-registro" style="display:none;">
-                <input type="text" id="reg-codigo" placeholder="Código"><br>
-                <input type="text" id="reg-nombre" placeholder="Nombres"><br>
-                <input type="text" id="reg-apellido" placeholder="Apellidos"><br>
-                <button onclick="registrar()">Registrarse</button>
-                <button onclick="volver()">Volver</button>
-            </div>
-
-            <!-- USUARIO LOGUEADO -->
-            <div id="vista-usuario" style="display:none;">
-                <h3 id="usuario-nombre"></h3>
-
-                <button onclick="logout()">Cerrar sesión</button>
-                <button onclick="volver()">Volver</button>
-            </div>
-
-        </div>
+      <a href="#" onclick="toggleCarrito()" aria-label="Carrito de compras">
+        <img class="icono" src="{{ url_for('static', filename='img/carrito.png') }}" alt="Carrito">
+        {# Badge con cantidad de items #}
+        <span id="carrito-badge" class="badge" style="display:none;">0</span>
+      </a>
 
     </div>
+  </div>
+</nav>
 
-    <!-- MAIN -->
-    <main>
+<!-- =============================================
+     PANEL LOGIN — Slide desde la derecha
+     Las vistas se muestran/ocultan con JS.
+============================================= -->
+<div id="panel-login" class="panel-login" role="dialog" aria-label="Panel de usuario">
 
-        <!-- HERO -->
-        <section class="hero">
-            <div class="hero-content">
-                <h1>FastFoot</h1>
-                <p>Comida rápida, deliciosa y al mejor precio</p>
-                <button class="btn-primary">Ver menú</button>
-            </div>
-        </section>
+  <div class="panel-header">
+    <h3>Mi Cuenta</h3>
+    <span onclick="toggleLogin()" class="cerrar" aria-label="Cerrar">✖</span>
+  </div>
 
-        <!-- PRODUCTOS -->
-        <section class="productos">
-            <h2>🔥 Destacados</h2>
+  <div id="login-mensaje" class="mensaje-panel" style="display:none;"></div>
 
-            <div class="grid">
-                <div class="card">
-                    <img src="{{url_for('static', filename='img/hamburgesa.jpg')}}">
-                    <h3>Hamburguesa</h3>
-                    <p class="precio">S/. 8</p>
-                    <button class="btn-agregar" onclick="agregarCarrito('Hamburguesa', 8)">Agregar</button>
-                </div>
+  <!-- Vista: botones iniciales -->
+  <div id="vista-inicial" class="vista-panel">
+    <button onclick="mostrarVista('login')">🔑 Iniciar Sesión</button>
+    <button onclick="mostrarVista('registro')">📝 Registrarse</button>
+    <button onclick="modoInvitado()">👤 Continuar como invitado</button>
+  </div>
 
-                <div class="card">
-                    <img src="{{url_for('static', filename='img/1a4pollo.webp')}}">
-                    <h3>1/4 Pollo a la brasa</h3>
-                    <p class="precio">S/. 17</p>
-                    <button class="btn-agregar" onclick="agregarCarrito('1/4 Pollo a la brasa', 17)">Agregar</button>
-                </div>
+  <!-- Vista: formulario de login -->
+  <div id="vista-login" class="vista-panel" style="display:none;">
+    <label for="login-codigo">Código de usuario</label>
+    <input type="text" id="login-codigo" placeholder="Ej: 001" maxlength="4" inputmode="numeric">
+    <button onclick="login()">Ingresar</button>
+    <button onclick="volver()" class="btn-secundario">← Volver</button>
+  </div>
 
-                <div class="card">
-                    <img src="{{url_for('static', filename='img/Salchipapa.webp')}}">
-                    <h3>Salchipapa</h3>
-                    <p class="precio">S/. 12</p>
-                    <button class="btn-agregar" onclick="agregarCarrito('Salchipapa', 12)">Agregar</button>
-                </div>
-            </div>
-        </section>
+  <!-- Vista: formulario de registro -->
+  <div id="vista-registro" class="vista-panel" style="display:none;">
+    <label for="reg-codigo">Código (máx 4 dígitos)</label>
+    <input type="text" id="reg-codigo" placeholder="Ej: 003" maxlength="4" inputmode="numeric">
 
-        <!-- PROMO -->
-        <section class="promo">
-            <h2>💸 Ofertas</h2>
-            <p>Aprovecha precios por tiempo limitado</p>
+    <label for="reg-nombre">Nombres</label>
+    <input type="text" id="reg-nombre" placeholder="Tu nombre">
 
-            <div class="grid">
-                <div class="card promo-card">
-                    <img src="{{url_for('static', filename='img/hamburgesa.jpg')}}">
-                    <h3>Hamburguesa - Promo</h3>
-                    <p class="precio">S/. 5</p>
-                    <button class="btn-agregar" onclick="agregarCarrito('Hamburguesa', 5)">Agregar</button>
-                </div>
+    <label for="reg-apellido">Apellidos</label>
+    <input type="text" id="reg-apellido" placeholder="Tu apellido">
 
-                <div class="card promo-card">
-                    <img src="{{url_for('static', filename='img/1a4pollo.webp')}}">
-                    <h3>1/4 Pollo - Promo</h3>
-                    <p class="precio">S/. 13</p>
-                    <button class="btn-agregar" onclick="agregarCarrito('1/4 Pollo', 13)">Agregar</button>
-                </div>
+    <button onclick="registrar()">Registrarse</button>
+    <button onclick="volver()" class="btn-secundario">← Volver</button>
+  </div>
 
-                <div class="card promo-card">
-                    <img src="{{url_for('static', filename='img/Salchipapa.webp')}}">
-                    <h3>Salchipapa - Promo</h3>
-                    <p class="precio">S/. 8</p>
-                    <button class="btn-agregar" onclick="agregarCarrito('Salchipapa', 8)">Agregar</button>
-                </div>
-            </div>
-        </section>
+  <!-- Vista: usuario logueado — permite editar sus datos -->
+  <div id="vista-usuario" class="vista-panel" style="display:none;">
+    <h4 id="usuario-nombre"></h4>
+    <p id="usuario-codigo-display" style="color:#888; font-size:13px;"></p>
 
-        <!-- CARRITO -->
-        <div id="carrito" class="carrito">
-            <div class="carrito-header">
-                <h3>Carrito</h3>
-                <span class="cerrar" onclick="toggleCarrito()">✖</span>
-            </div>
+    <label for="edit-nombres">Nombres</label>
+    <input type="text" id="edit-nombres" placeholder="Nombres">
 
-            <div id="carrito-items"></div>
+    <label for="edit-apellidos">Apellidos</label>
+    <input type="text" id="edit-apellidos" placeholder="Apellidos">
 
-            <div class="carrito-footer">
-                <p>Total: S/ <span id="total">0</span></p>
-            </div>
-        </div>
+    <button onclick="modificarUsuario()">💾 Guardar cambios</button>
+    <button onclick="logout()" class="btn-peligro">🚪 Cerrar sesión</button>
+  </div>
 
-    </main>
+</div>
 
-    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+<!-- =============================================
+     MAIN — Contenido del sitio
+============================================= -->
+<main>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-content">
+      <h1>FastFoot</h1>
+      <p>Comida rápida, deliciosa y al mejor precio</p>
+      <button class="btn-primary" onclick="document.querySelector('.productos').scrollIntoView({behavior:'smooth'})">
+        Ver menú
+      </button>
+    </div>
+  </section>
+
+  <!-- SECCIÓN MENÚ — ahora dinámico desde productos.txt -->
+<section class="productos">
+  <h2>🔥 Nuestro Menú</h2>
+  <!--
+    ✅ id="grid-productos" es el punto de montaje.
+    MenuDinamico.init() en dashboard.js detecta este elemento
+    y hace fetch a /api/productos para renderizar las cards.
+    Si el archivo productos.txt está vacío, muestra un mensaje.
+  -->
+  <div class="grid" id="grid-productos">
+    <!-- Las cards se insertan aquí dinámicamente -->
+    <p style="color:#aaa; text-align:center; width:100%;">Cargando menú...</p>
+  </div>
+</section>
+
+<!--
+  La sección de Ofertas puede seguir siendo estática
+  o también hacerse dinámica con una categoría "Promos"
+  en productos.txt cuando el proyecto crezca.
+-->
+<section class="promo">
+  <h2>💸 Ofertas del día</h2>
+  <p>Aprovecha precios por tiempo limitado</p>
+  <div class="grid" id="grid-promos">
+    <p style="color:rgba(255,255,255,0.6); text-align:center; width:100%;">
+      Cargando ofertas...
+    </p>
+  </div>
+</section>
+
+</main>
+
+<!-- =============================================
+     PANEL CARRITO — Slide desde la derecha
+============================================= -->
+<div id="carrito" class="carrito" role="dialog" aria-label="Carrito de compras">
+
+  <div class="carrito-header">
+    <h3>🛒 Carrito</h3>
+    <span class="cerrar" onclick="toggleCarrito()">✖</span>
+  </div>
+
+  <div id="carrito-items" class="carrito-items">
+    <!-- Items se renderizan dinámicamente con JS -->
+  </div>
+
+  <div class="carrito-footer">
+    <p>Total: <strong>S/ <span id="total">0</span></strong></p>
+    <!--
+      ✅ Botón de Confirmar Pedido:
+      Llama a confirmarPedido() en JS, que hace POST al backend.
+      Solo funciona si hay sesión activa.
+    -->
+    <button class="btn-confirmar" onclick="confirmarPedido()">
+      ✅ Confirmar Pedido
+    </button>
+  </div>
+
+</div>
+
+<!--
+  ✅ Pasamos el usuario de Flask a JS de forma segura usando
+  un elemento data- en lugar de inyectar directamente en el JS.
+  Así evitamos problemas de escapado y XSS.
+-->
+{% if usuario %}
+<div id="session-data"
+     data-codigo="{{ usuario.codigo }}"
+     data-nombres="{{ usuario.nombres }}"
+     data-apellidos="{{ usuario.apellidos }}"
+     style="display:none;">
+</div>
+{% endif %}
+
+<script src="{{ url_for('static', filename='js/script.js') }}"></script>
 </body>
 </html>

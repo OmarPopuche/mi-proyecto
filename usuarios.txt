@@ -1,7 +1,7 @@
 001,Omar,Vilela
 002,Juan,Fuentes
-2001,Omar,Popuche
 003,Rodrigo,Salazar
-004,Jesus,Winner\n005,Mauricio,Benites
+004,Jesus,Winner
+005,Mauricio,Benites
 006,Jorge,Ruiz
 009,Raul,Salinas

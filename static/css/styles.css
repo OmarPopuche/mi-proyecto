@@ -1,406 +1,125 @@
+/* ============================================================
+   styles.css — Bazar de Omar
+   Identidad: Negro + Crema + Púrpura
+   Omar Vilela | Full-Stack Engineer
+============================================================ */
+
+/* ── Variables de marca — fuente única de verdad para colores ── */
+:root {
+  --color-negro:         #111111;
+  --color-negro-suave:   #1c1c1c;
+  --color-crema:         #FDFBF7;
+  --color-crema-oscuro:  #F5F2EB;
+  --color-purpura:       #6A1B9A;
+  --color-purpura-claro: #9C4DCC;
+  --color-purpura-suave: #F3E5F9;
+  --color-texto:         #2b2b2b;
+  --sombra-suave:        0 4px 16px rgba(0,0,0,0.08);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
 body {
-    margin: 0;
-    font-family: 'Segoe UI', sans-serif;
-    background: #f5f7fa;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  background: var(--color-crema);
+  color: var(--color-texto);
+  line-height: 1.5;
 }
 
-/* NAVBAR */
+/* ============================================================
+   NAVBAR — Fondo negro sólido
+============================================================ */
 .navbar {
-    background: #06b1db;
-    padding: 12px 20px;
-    position: sticky;
-    top: 0;
-    z-index: 1000;
+  background: var(--color-negro);
+  padding: 16px 0;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.25);
 }
 
-.contenedor {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+.navbar .contenedor {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .logo-container {
-    display: flex;
-    align-items: center;
-    text-decoration: none;
-    color: white;
-    font-size: 22px;
-    font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
 }
 
 .logo {
-    width: 40px;
-    margin-right: 10px;
+  height: 38px;
+  width: 38px;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+/* ✅ Título de marca: púrpura vibrante, tipografía imponente */
+.logo-container span {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  background: linear-gradient(135deg, var(--color-purpura-claro), var(--color-purpura));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 .menu {
-    display: flex;
-    gap: 15px;
+  display: flex;
+  align-items: center;
+  gap: 22px;
+}
+
+.menu a {
+  position: relative;
+  display: flex;
+  align-items: center;
 }
 
 .icono {
-    width: 32px;
-    transition: transform 0.3s;
+  width: 24px;
+  height: 24px;
+  filter: invert(1);   /* íconos blancos sobre fondo negro */
+  opacity: 0.9;
+  transition: opacity 0.2s;
 }
 
-.icono:hover {
-    transform: scale(1.2);
-}
+.icono:hover { opacity: 1; }
 
-/* HAMBURGUESA */
-.menu-toggle {
-    display: none;
-    font-size: 28px;
-    color: white;
-    cursor: pointer;
-}
-
-/* HERO */
-.hero {
-    background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)),
-                url('/static/img/hamburgesa.jpg') center/cover;
-    color: white;
-    text-align: center;
-    padding: 100px 20px;
-}
-
-.hero h1 {
-    font-size: 50px;
-    margin-bottom: 10px;
-}
-
-.hero p {
-    font-size: 18px;
-}
-
-/* BOTÓN */
-.btn-primary {
-    margin-top: 20px;
-    padding: 12px 25px;
-    background: #ff3b3b;
-    color: white;
-    border: none;
-    border-radius: 25px;
-    cursor: pointer;
-    font-size: 16px;
-    transition: 0.3s;
-}
-
-.btn-primary:hover {
-    background: #e02e2e;
-    transform: scale(1.05);
-}
-
-/* SECCIONES */
-.productos, .promo {
-    padding: 50px 20px;
-    text-align: center;
-}
-
-h2 {
-    margin-bottom: 30px;
-}
-
-/* GRID */
-.grid {
-    display: flex;
-    gap: 20px;
-    justify-content: center;
-    flex-wrap: wrap;
-}
-
-/* CARDS */
-.card {
-    width: 220px;
-    background: white;
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-    transition: 0.3s;
-}
-
-.card:hover {
-    transform: translateY(-10px);
-}
-
-.card img {
-    width: 100%;
-    height: 150px;
-    object-fit: cover;
-}
-
-.card h3 {
-    margin: 10px 0;
-}
-
-.precio {
-    color: #06b1db;
-    font-weight: bold;
-    margin-bottom: 15px;
-}
-
-/* PROMO */
-.promo {
-    background: #06b1db;
-    color: white;
-}
-
-.promo-card {
-    background: white;
-    color: black;
-}
-
-.carrito {
-    position: fixed;
-    top: 0;
-    right: -350px;
-    width: 300px;
-    height: 100%;
-    background: white;
-    box-shadow: -3px 0 10px rgba(0,0,0,0.2);
-    transition: 0.3s;
-    display: flex;
-    flex-direction: column;
-    z-index: 2000;
-}
-
-.carrito.active {
-    right: 0;
-}
-
-.carrito-header {
-    display: flex;
-    justify-content: space-between;
-    padding: 15px;
-    background: #06b1db;
-    color: white;
-}
-
-.cerrar {
-    cursor: pointer;
-}
-
-.carrito-items {
-    flex: 1;
-    overflow-y: auto;
-    padding: 10px;
-}
-
-.item {
-    border-bottom: 1px solid #ddd;
-    padding: 10px 0;
-}
-
-.item button {
-    margin: 2px;
-}
-
-.carrito-footer {
-    padding: 15px;
-    font-weight: bold;
-}
-
-/* BOTÓN AGREGAR */
-.btn-agregar {
-    width: 80%;
-    margin: 10px auto 15px auto;
-    padding: 10px;
-    display: block;
-
-    background: linear-gradient(135deg, #ff3b3b, #ff6b6b);
-    color: white;
-    border: none;
-    border-radius: 25px;
-
-    font-size: 14px;
-    font-weight: bold;
-    cursor: pointer;
-
-    transition: all 0.3s ease;
-}
-
-/* HOVER */
-.btn-agregar:hover {
-    transform: scale(1.05);
-    box-shadow: 0 5px 15px rgba(255, 59, 59, 0.4);
-}
-
-/* CLICK */
-.btn-agregar:active {
-    transform: scale(0.95);
-}
-
-/* EFECTO ICONO */
-.btn-agregar::before {
-    content: "➕ ";
-}
-
-/* CONTENEDOR ACCIONES */
-.acciones {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-top: 5px;
-}
-
-/* BOTONES + Y - */
-.btn-cantidad {
-    width: 28px;
-    height: 28px;
-    border: none;
-    border-radius: 50%;
-    background: #06b1db;
-    color: white;
-    font-weight: bold;
-    cursor: pointer;
-    transition: 0.3s;
-}
-
-.btn-cantidad:hover {
-    background: #048aad;
-    transform: scale(1.1);
-}
-
-/* CANTIDAD */
-.cantidad {
-    min-width: 20px;
-    text-align: center;
-    font-weight: bold;
-}
-
-/* BOTÓN ELIMINAR */
-.btn-eliminar {
-    margin-left: auto;
-    background: #ff3b3b;
-    color: white;
-    border: none;
-    border-radius: 50%;
-    width: 28px;
-    height: 28px;
-    cursor: pointer;
-    transition: 0.3s;
-}
-
-.btn-eliminar:hover {
-    background: #e02e2e;
-    transform: scale(1.1);
-}
-
-/* ITEM DEL CARRITO */
-.item {
-    border-bottom: 1px solid #ddd;
-    padding: 10px 0;
-}
-
-.item-info {
-    display: flex;
-    justify-content: space-between;
-    font-size: 14px;
-}
-
-.panel-login {
-    position: fixed;
-    top: 0;
-    right: -350px;
-    width: 300px;
-    height: 100%;
-    background: white;
-    box-shadow: -3px 0 10px rgba(0,0,0,0.2);
-    transition: 0.3s;
-    z-index: 3000;
-    padding: 15px;
-}
-
-.panel-login.active {
-    right: 0;
-}
-
-.panel-header {
-    display: flex;
-    justify-content: space-between;
-    background: #06b1db;
-    color: white;
-    padding: 10px;
-}
-
-.panel-login input {
-    width: 90%;
-    padding: 8px;
-    margin: 5px 0;
-}
-
-.panel-login button {
-    width: 100%;
-    padding: 10px;
-    margin: 5px 0;
-    background: #ff3b3b;
-    color: white;
-    border: none;
-    border-radius: 10px;
-    cursor: pointer;
-}
-
-/* RESPONSIVE */
-@media (max-width: 768px) {
-
-    .menu-toggle {
-        display: block;
-    }
-
-    .menu {
-        position: absolute;
-        top: 60px;
-        right: 0;
-        background: #06b1db;
-        flex-direction: column;
-        width: 100%;
-        display: none;
-        align-items: center;
-    }
-
-    .menu.active {
-        display: flex;
-    }
-
-    .menu a {
-        padding: 15px;
-    }
-}
-
-/* =============================================
-   MEJORAS ADICIONALES — FastFoot
-   Agrega esto al final de tu styles.css actual
-============================================= */
-
-/* Saludo en navbar */
 .saludo-usuario {
-  color: white;
+  color: var(--color-crema);
   font-size: 14px;
-  align-self: center;
+  opacity: 0.85;
 }
 
-/* Link al dashboard en navbar */
 .btn-dashboard {
-  color: white;
-  background: rgba(255,255,255,0.2);
-  padding: 6px 12px;
+  color: var(--color-crema);
+  background: rgba(106, 27, 154, 0.35);
+  border: 1px solid var(--color-purpura-claro);
+  padding: 6px 14px;
   border-radius: 20px;
   text-decoration: none;
   font-size: 13px;
-  transition: 0.3s;
-  align-self: center;
+  transition: 0.25s;
 }
 
 .btn-dashboard:hover {
-  background: rgba(255,255,255,0.35);
+  background: var(--color-purpura);
 }
 
-/* Badge del carrito */
 .badge {
-  position: absolute;       /* Requiere que el padre <a> tenga position:relative */
-  top: -5px;
-  right: -5px;
-  background: #ff3b3b;
+  position: absolute;
+  top: -6px;
+  right: -8px;
+  background: var(--color-purpura-claro);
   color: white;
   font-size: 10px;
   font-weight: bold;
@@ -412,66 +131,399 @@ h2 {
   justify-content: center;
 }
 
-/* Para que el badge se posicione bien, el <a> del carrito necesita esto */
-.menu a {
-  position: relative;
+.menu-toggle {
+  display: none;
+  color: var(--color-crema);
+  font-size: 24px;
+  cursor: pointer;
 }
 
-/* Labels en el panel de login */
-.panel-login label {
+/* ============================================================
+   PANEL LOGIN
+============================================================ */
+.panel-login {
+  position: fixed;
+  top: 0;
+  right: -380px;
+  width: 360px;
+  height: 100%;
+  background: var(--color-crema);
+  box-shadow: -6px 0 24px rgba(0,0,0,0.15);
+  transition: right 0.35s ease;
+  z-index: 100;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.panel-login.active { right: 0; }
+
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid var(--color-purpura-suave);
+}
+
+.panel-header h3 { color: var(--color-purpura); font-size: 18px; }
+
+.cerrar {
+  cursor: pointer;
+  font-size: 18px;
+  color: #888;
+  transition: color 0.2s;
+}
+.cerrar:hover { color: var(--color-purpura); }
+
+.vista-panel { display: flex; flex-direction: column; gap: 10px; }
+
+.vista-panel label {
   font-size: 12px;
-  color: #555;
-  display: block;
-  margin: 8px 0 2px;
+  color: #666;
+  font-weight: 600;
+  margin-top: 6px;
 }
 
-/* Mensaje de feedback en el panel */
+.vista-panel input,
+.vista-panel select {
+  padding: 11px 14px;
+  border: 1.5px solid #e3ddea;
+  border-radius: 10px;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s;
+  background: white;
+}
+
+.vista-panel input:focus { border-color: var(--color-purpura); }
+
+.vista-panel button {
+  padding: 12px;
+  border: none;
+  border-radius: 10px;
+  background: var(--color-purpura);
+  color: white;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: 0.25s;
+}
+
+.vista-panel button:hover {
+  background: var(--color-purpura-claro);
+  transform: translateY(-1px);
+}
+
+.btn-secundario { background: #999 !important; }
+.btn-secundario:hover { background: #777 !important; }
+
+.btn-peligro { background: #c0392b !important; }
+.btn-peligro:hover { background: #a93226 !important; }
+
 .mensaje-panel {
-  padding: 8px 10px;
-  border-radius: 6px;
+  padding: 9px 12px;
+  border-radius: 8px;
   font-size: 13px;
-  background: #f0f9ff;
+  background: var(--color-purpura-suave);
+  color: var(--color-purpura);
   margin-bottom: 10px;
 }
 
-/* Botón secundario (Volver) */
-.btn-secundario {
-  background: #aaa !important;
+/* ============================================================
+   HERO
+============================================================ */
+.hero {
+  background: linear-gradient(135deg, var(--color-negro) 0%, #2a1a35 60%, var(--color-purpura) 140%);
+  color: var(--color-crema);
+  padding: 90px 24px;
+  text-align: center;
 }
 
-.btn-secundario:hover {
-  background: #888 !important;
+.hero-content h1 {
+  font-size: 48px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  margin-bottom: 12px;
+  background: linear-gradient(135deg, #fff, var(--color-purpura-claro));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
-/* Botón de peligro (Cerrar sesión) */
-.btn-peligro {
-  background: #ff3b3b !important;
+.hero-content p {
+  font-size: 17px;
+  opacity: 0.85;
+  margin-bottom: 28px;
 }
 
-/* Botón confirmar pedido en el carrito */
+.btn-primary {
+  background: var(--color-purpura);
+  color: white;
+  border: none;
+  padding: 14px 32px;
+  border-radius: 30px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.25s;
+}
+
+.btn-primary:hover {
+  background: var(--color-purpura-claro);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(106, 27, 154, 0.35);
+}
+
+/* ============================================================
+   SECCIONES DE PRODUCTOS — fondo crema
+============================================================ */
+.productos, .promo {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 60px 24px;
+}
+
+.productos h2, .promo h2 {
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--color-negro);
+  margin-bottom: 8px;
+  border-left: 5px solid var(--color-purpura);
+  padding-left: 14px;
+}
+
+.promo p {
+  color: #777;
+  margin-bottom: 28px;
+  padding-left: 19px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 24px;
+  margin-top: 24px;
+}
+
+/* ── Tarjeta de producto ── */
+.card {
+  background: white;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: var(--sombra-suave);
+  transition: transform 0.25s, box-shadow 0.25s;
+  border: 1px solid #f0ebe0;
+}
+
+.card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 12px 28px rgba(106, 27, 154, 0.18);
+}
+
+.card img {
+  width: 100%;
+  height: 170px;
+  object-fit: cover;
+  background: var(--color-crema-oscuro);
+}
+
+.card h3 {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-negro);
+  padding: 14px 16px 4px;
+}
+
+.card .precio {
+  color: var(--color-purpura);
+  font-weight: 800;
+  font-size: 17px;
+  padding: 0 16px;
+}
+
+.btn-agregar {
+  display: block;
+  width: calc(100% - 32px);
+  margin: 14px 16px 16px;
+  padding: 10px;
+  background: var(--color-negro);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  transition: 0.25s;
+}
+
+.btn-agregar:hover {
+  background: var(--color-purpura);
+}
+
+.cargando-menu, .error-menu, .estado-vacio {
+  text-align: center;
+  color: #999;
+  width: 100%;
+  padding: 40px;
+  font-size: 14px;
+}
+
+/* ============================================================
+   CARRITO LATERAL
+============================================================ */
+.carrito {
+  position: fixed;
+  top: 0;
+  right: -400px;
+  width: 380px;
+  height: 100%;
+  background: var(--color-crema);
+  box-shadow: -6px 0 24px rgba(0,0,0,0.15);
+  transition: right 0.35s ease;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+}
+
+.carrito.active { right: 0; }
+
+.carrito-header {
+  background: var(--color-negro);
+  color: white;
+  padding: 18px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.carrito-header h3 { font-size: 17px; }
+.carrito-header .cerrar { color: white; }
+
+.carrito-items {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+}
+
+.item {
+  background: white;
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin-bottom: 10px;
+  box-shadow: var(--sombra-suave);
+}
+
+.item-info {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.item-info strong { color: var(--color-negro); }
+.item-info span   { color: var(--color-purpura); font-weight: 700; }
+
+.acciones {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.btn-cantidad {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: none;
+  background: var(--color-purpura-suave);
+  color: var(--color-purpura);
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.2s;
+}
+.btn-cantidad:hover { background: var(--color-purpura); color: white; }
+
+.cantidad { font-weight: 600; min-width: 18px; text-align: center; }
+
+.btn-eliminar {
+  margin-left: auto;
+  background: none;
+  border: none;
+  color: #c0392b;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.carrito-vacio {
+  text-align: center;
+  color: #aaa;
+  padding: 40px 16px;
+  font-size: 14px;
+}
+
+.carrito-footer {
+  padding: 18px 20px;
+  border-top: 1px solid #eee;
+  background: white;
+}
+
+.carrito-footer p {
+  font-size: 16px;
+  margin-bottom: 12px;
+}
+
+.carrito-footer strong { color: var(--color-purpura); }
+
 .btn-confirmar {
   width: 100%;
-  padding: 12px;
-  background: linear-gradient(135deg, #06b1db, #048aad);
+  padding: 13px;
+  background: linear-gradient(135deg, var(--color-purpura), var(--color-purpura-claro));
   color: white;
   border: none;
   border-radius: 10px;
   font-size: 15px;
-  font-weight: bold;
+  font-weight: 700;
   cursor: pointer;
-  transition: 0.3s;
-  margin-top: 10px;
+  transition: 0.25s;
 }
 
 .btn-confirmar:hover {
-  transform: scale(1.03);
-  box-shadow: 0 5px 15px rgba(6, 177, 219, 0.4);
+  transform: scale(1.02);
+  box-shadow: 0 6px 18px rgba(106, 27, 154, 0.35);
 }
 
-/* Carrito vacío */
-.carrito-vacio {
+/* ============================================================
+   FOOTER — Fondo negro sólido
+============================================================ */
+.footer-bazar {
+  background: var(--color-negro);
+  color: rgba(255,255,255,0.7);
   text-align: center;
-  color: #aaa;
-  padding: 30px 15px;
-  font-size: 14px;
+  padding: 28px 20px;
+  margin-top: 60px;
+  font-size: 13px;
+}
+
+.footer-bazar strong {
+  color: var(--color-purpura-claro);
+}
+
+/* ============================================================
+   RESPONSIVE
+============================================================ */
+@media (max-width: 768px) {
+  .menu-toggle { display: block; }
+  .menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: var(--color-negro);
+    flex-direction: column;
+    padding: 16px;
+    display: none;
+  }
+  .menu.active { display: flex; }
+  .hero-content h1 { font-size: 34px; }
+  .carrito, .panel-login { width: 100%; right: -100%; }
 }

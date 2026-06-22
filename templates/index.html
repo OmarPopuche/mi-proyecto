@@ -3,20 +3,20 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FastFoot</title>
+  <title>Bazar de Omar</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
 </head>
 <body>
 
 <!-- =============================================
-     NAVBAR
+     NAVBAR — Fondo negro, marca púrpura
 ============================================= -->
 <nav class="navbar">
   <div class="contenedor">
 
     <a href="/" class="logo-container">
-      <img class="logo" src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo FastFoot">
-      <span>FastFoot</span>
+      <img class="logo" src="{{ url_for('static', filename='img/logo.png') }}" alt="Bazar de Omar">
+      <span>Bazar de Omar</span>
     </a>
 
     <div class="menu-toggle" onclick="toggleMenu()">☰</div>
@@ -25,9 +25,9 @@
 
       {% if usuario %}
         <span class="saludo-usuario">Hola, {{ usuario.nombres }}</span>
-
+        
         {% if usuario.codigo == "001" %}
-          <a href="/dashboard" class="btn-dashboard">⚙️ Dashboard</a>
+          <a href="/dashboard" class="btn-dashboard">⚙️ Panel Admin</a>
         {% endif %}
       {% endif %}
 
@@ -35,7 +35,7 @@
         <img class="icono" src="{{ url_for('static', filename='img/usuario.webp') }}" alt="Usuario">
       </a>
 
-      <a href="#" onclick="toggleCarrito()" aria-label="Carrito" style="position:relative;">
+      <a href="#" onclick="toggleCarrito()" aria-label="Carrito">
         <img class="icono" src="{{ url_for('static', filename='img/carrito.png') }}" alt="Carrito">
         <span id="carrito-badge" class="badge" style="display:none;">0</span>
       </a>
@@ -44,9 +44,7 @@
   </div>
 </nav>
 
-<!-- =============================================
-     PANEL LOGIN
-============================================= -->
+<!-- PANEL LOGIN -->
 <div id="panel-login" class="panel-login" role="dialog" aria-label="Panel de usuario">
 
   <div class="panel-header">
@@ -58,7 +56,7 @@
 
   <div id="vista-inicial" class="vista-panel">
     <button onclick="mostrarVista('login')">🔑 Iniciar Sesión</button>
-    <button onclick="mostrarVista('registro')">📝 Registrarse</button>
+    <button onclick="mostrarVista('registro')">📝 Registrarme</button>
     <button onclick="modoInvitado()">👤 Continuar como invitado</button>
   </div>
 
@@ -76,7 +74,7 @@
     <input type="text" id="reg-nombre" placeholder="Tu nombre">
     <label for="reg-apellido">Apellidos</label>
     <input type="text" id="reg-apellido" placeholder="Tu apellido">
-    <button onclick="registrar()">Registrarse</button>
+    <button onclick="registrar()">Crear cuenta</button>
     <button onclick="volver()" class="btn-secundario">← Volver</button>
   </div>
 
@@ -101,37 +99,37 @@
   <!-- HERO -->
   <section class="hero">
     <div class="hero-content">
-      <h1>FastFoot</h1>
-      <p>Comida rápida, deliciosa y al mejor precio</p>
+      <h1>Bazar de Omar</h1>
+      <p>Regalos, tecnología menor y artículos para cada ocasión</p>
       <button class="btn-primary"
               onclick="document.querySelector('.productos').scrollIntoView({behavior:'smooth'})">
-        Ver menú
+        Ver catálogo
       </button>
     </div>
   </section>
 
-  <!-- =============================================
-       MENÚ DINÁMICO
-       ✅ El contenedor #grid-productos está vacío.
-       script.js lo llena con fetch a /api/productos.
-       No hay cards hardcodeadas — todo viene del txt.
-  ============================================= -->
+  <!-- CATÁLOGO DINÁMICO -->
   <section class="productos">
-    <h2>🔥 Nuestro Menú</h2>
+    <h2>🛍️ Nuestro Catálogo</h2>
     <div class="grid" id="grid-productos">
-      <!--
-        Texto de carga visible mientras JS hace el fetch.
-        MenuDinamico.init() lo reemplaza con las cards reales.
-      -->
-      <p class="cargando-menu">Cargando menú...</p>
+      <p class="cargando-menu">Cargando catálogo...</p>
     </div>
   </section>
 
-  <!-- CARRITO — slide desde la derecha -->
-  <div id="carrito" class="carrito" role="dialog" aria-label="Carrito de compras">
+  <!-- NOVEDADES -->
+  <section class="promo">
+    <h2>✨ Novedades del Bazar</h2>
+    <p>Los últimos artículos que llegaron a la tienda</p>
+    <div class="grid" id="grid-novedades">
+      <p class="cargando-menu">Cargando novedades...</p>
+    </div>
+  </section>
 
+  <!-- CARRITO -->
+  <div id="carrito" class="carrito" role="dialog" aria-label="Carrito de compras">
+    
     <div class="carrito-header">
-      <h3>🛒 Carrito</h3>
+      <h3>🛒 Tu Carrito</h3>
       <span class="cerrar" onclick="toggleCarrito()">✖</span>
     </div>
 
@@ -140,7 +138,7 @@
     <div class="carrito-footer">
       <p>Total: <strong>S/ <span id="total">0</span></strong></p>
       <button class="btn-confirmar" onclick="confirmarPedido()">
-        ✅ Confirmar Pedido
+        ✅ Confirmar Compra
       </button>
     </div>
 
@@ -148,11 +146,12 @@
 
 </main>
 
-<!--
-  Datos de sesión inyectados por Flask para que JS
-  los lea sin variables globales hardcodeadas.
-  Visible solo cuando hay sesión activa.
--->
+<!-- FOOTER -->
+<footer class="footer-bazar">
+  <p><strong>Bazar de Omar</strong> — Regalos y artículos variados</p>
+  <p>© 2026 Todos los derechos reservados</p>
+</footer>
+
 {% if usuario %}
 <div id="session-data"
      data-codigo="{{ usuario.codigo }}"
@@ -162,11 +161,7 @@
 </div>
 {% endif %}
 
-<!--
-  ✅ script.js al final del body.
-  Contiene: Auth, UI, Carrito, MenuDinamico.
-  Un solo archivo, sin dependencias externas.
--->
+
 <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 
 </body>

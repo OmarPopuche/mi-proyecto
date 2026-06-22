@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard — FastFoot Admin</title>
+  <title>Panel Admin — Bazar de Omar</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
   <!--
     Chart.js vía CDN.
@@ -20,35 +20,31 @@
 ============================================= -->
 <aside class="sidebar" id="sidebar">
   <div class="sidebar-logo">
-    <span>🍔</span>
-    <strong>FastFoot</strong>
+    <span>🛍️</span>
+    <strong>Bazar de Omar</strong>
   </div>
 
   <nav class="sidebar-nav">
-    <a href="#seccion-stats"     class="nav-link active" onclick="activarNav(this)">
+    <a href="#seccion-stats" class="nav-link active" onclick="activarNav(this)">
       📊 Resumen
     </a>
-    <a href="#seccion-pedidos"   class="nav-link" onclick="activarNav(this)">
-      🧾 Pedidos
-      <!--
-        Badge dinámico con el total de pedidos en espera.
-        Flask lo inyecta directamente en el HTML.
-      -->
+    <a href="#seccion-pedidos" class="nav-link" onclick="activarNav(this)">
+      🧾 Compras
       {% if pedidos_espera %}
         <span class="nav-badge">{{ pedidos_espera|length }}</span>
       {% endif %}
     </a>
-    <a href="#seccion-usuarios"  class="nav-link" onclick="activarNav(this)">
+    <a href="#seccion-usuarios" class="nav-link" onclick="activarNav(this)">
       👥 Usuarios
     </a>
     <a href="#seccion-productos" class="nav-link" onclick="activarNav(this)">
-      🍟 Productos
+      🎁 Catálogo
     </a>
   </nav>
 
   <div class="sidebar-footer">
     <span>Admin: {{ usuario.nombres }}</span>
-    <a href="/" class="btn-volver-sitio">← Sitio</a>
+    <a href="/" class="btn-volver-sitio">← Tienda</a>
   </div>
 </aside>
 
@@ -323,35 +319,28 @@
   =============================================
 -->
 <section id="seccion-productos" class="dash-seccion">
-  <h2 class="dash-titulo">🍟 Gestión de Productos (Menú)</h2>
+  <h2 class="dash-titulo">🎁 Gestión del Catálogo</h2>
 
-  <!-- Formulario para agregar producto -->
   <div class="form-card">
-    <h3>➕ Agregar al Menú</h3>
+    <h3>➕ Agregar Producto al Bazar</h3>
     <div class="form-row">
 
       <div class="form-grupo">
-        <label for="prod-nombre">Nombre del plato</label>
+        <label for="prod-nombre">Nombre del producto</label>
         <input type="text" id="prod-nombre"
-               placeholder="Ej: Hamburguesa Doble" maxlength="60">
+               placeholder="Ej: Taza Cerámica Personalizada" maxlength="60">
       </div>
 
       <div class="form-grupo">
         <label for="prod-precio">Precio (S/)</label>
         <input type="number" id="prod-precio"
-               placeholder="Ej: 12.50" min="0.5" step="0.5">
+               placeholder="Ej: 18.00" min="0.5" step="0.5">
       </div>
 
-      <!--
-        ✅ NUEVO: Campo URL de imagen.
-        Reemplaza al <select> de categoría anterior.
-        El usuario pega un enlace directo a la imagen del plato.
-        El backend valida que empiece con "http".
-      -->
       <div class="form-grupo" style="flex: 2; min-width: 260px;">
         <label for="prod-imagen">Link de la imagen (URL)</label>
         <input type="url" id="prod-imagen"
-               placeholder="https://ejemplo.com/imagen.jpg">
+               placeholder="https://ejemplo.com/producto.jpg">
       </div>
 
       <div class="form-grupo form-grupo-boton">
@@ -363,7 +352,7 @@
     </div>
   </div>
 
-  <!-- Tabla de productos actuales -->
+  <!-- Tabla: misma estructura, solo cambia el fallback de imagen -->
   <div class="tabla-wrapper" style="margin-top:20px;">
     <table class="dash-tabla">
       <thead>
@@ -381,31 +370,22 @@
           {% for p in productos %}
           <tr id="fila-producto-{{ p.line_index }}">
             <td><code>{{ p.id_producto }}</code></td>
-
-            <!--
-              ✅ Preview de imagen directo desde la URL del txt.
-              onerror: si la URL falla, muestra un placeholder.
-            -->
             <td>
               <img
                 src="{{ p.imagen_url }}"
                 alt="{{ p.nombre }}"
                 class="prod-thumb"
-                onerror="this.src='/static/img/hamburgesa.jpg'"
+                onerror="this.src='https://i.imgur.com/QnYV2sJ.jpg'"
               >
             </td>
-
             <td>{{ p.nombre }}</td>
             <td>S/ {{ "%.2f"|format(p.precio) }}</td>
-
-            <!-- URL truncada para no romper el layout -->
             <td>
               <a href="{{ p.imagen_url }}" target="_blank"
                  class="link-url" title="{{ p.imagen_url }}">
                 {{ p.imagen_url[:35] }}{% if p.imagen_url|length > 35 %}…{% endif %}
               </a>
             </td>
-
             <td>
               <button
                 class="btn-peligro-sm"
@@ -418,14 +398,13 @@
         {% else %}
           <tr id="fila-sin-productos">
             <td colspan="6" class="estado-vacio">
-              No hay productos. ¡Agrega el primero con el formulario de arriba!
+              El catálogo está vacío. ¡Agrega el primer producto!
             </td>
           </tr>
         {% endif %}
       </tbody>
     </table>
   </div>
-
 </section>
 
 </main>

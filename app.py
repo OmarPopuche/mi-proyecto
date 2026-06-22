@@ -1,11 +1,11 @@
 # ============================================================
-# app.py — FastFoot Backend
-# CAMBIOS EN ESTA VERSIÓN:
-#   1. leer_productos(): campo 4 ahora es "imagen_url", no "categoria"
-#   2. guardar_productos(): serializa imagen_url en lugar de categoria
-#   3. api_productos_crear(): recibe y valida "imagen_url" en el body
-#   4. Ruta "/": sin cambios, ya pasa productos al template
-#   5. Ruta "/dashboard": sin cambios, el JOIN ya funciona correctamente
+# app.py — Bazar de Omar (Backend)
+# Omar Vilela | Full-Stack Engineer
+#
+# ✅ MIGRACIÓN DE NEGOCIO: de FastFoot a Bazar de Omar.
+# Solo cambian textos de mensajes y comentarios de dominio.
+# La arquitectura de archivos, line_index, JOIN y Chart.js
+# permanece IDÉNTICA — no se tocó ningún algoritmo.
 # ============================================================
 
 import os
@@ -19,7 +19,7 @@ app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "dev_key_cambiar_en_produccion")
 
 ARCHIVO_USUARIOS  = "usuarios.txt"
-ARCHIVO_PEDIDOS   = "pedidos.txt"
+ARCHIVO_PEDIDOS   = "pedidos.txt"   # Conserva el nombre: ahora son "compras" del bazar
 ARCHIVO_PRODUCTOS = "productos.txt"
 
 
@@ -62,13 +62,16 @@ def validar_codigo(codigo: str) -> str | None:
     return None
 
 
-# ── Helpers de pedidos (sin cambios) ─────────────────────────
+# ── Helpers de pedidos/compras (sin cambios de lógica) ───────
+#
+# ✅ No se modifica leer_pedidos(), guardar_pedidos() ni
+# enriquecer_pedidos_con_usuarios(). Mismo line_index,
+# mismo formato de 6 campos, mismo JOIN para los gráficos.
 
 def leer_pedidos() -> list[dict]:
     """
-    Lee pedidos.txt con enumerate() para asignar line_index.
+    Lee pedidos.txt (compras del bazar) con enumerate() para line_index.
     Formato: codigo_usuario, producto, cantidad, precio, estado, timestamp
-    Compatibilidad legacy (4 campos): estado="espera", timestamp="N/D"
     """
     pedidos = []
     try:
@@ -103,11 +106,7 @@ def guardar_pedidos(pedidos: list[dict]) -> None:
             )
 
 def enriquecer_pedidos_con_usuarios(pedidos, usuarios) -> list[dict]:
-    """
-    JOIN en memoria pedidos ↔ usuarios.
-    Agrega nombre_usuario y subtotal a cada pedido.
-    Este JOIN es el que alimenta los gráficos del dashboard.
-    """
+    """JOIN en memoria — alimenta los gráficos del dashboard. No tocar."""
     indice = {u["codigo"]: u for u in usuarios}
     for p in pedidos:
         u = indice.get(p["codigo_usuario"])
@@ -118,26 +117,13 @@ def enriquecer_pedidos_con_usuarios(pedidos, usuarios) -> list[dict]:
     return pedidos
 
 
-# ── Helpers de productos — MODIFICADOS ───────────────────────
-
-# ============================================================
-# HELPERS — Productos  (reemplaza las funciones del Gist)
-#
-# CAMBIO: el campo 4 del txt pasa de "categoria" a "imagen_url".
-#
-# Nuevo formato de productos.txt:
-#   id_producto, nombre, precio, imagen_url
-#   P01,Pollo a la brasa,17.0,https://i.imgur.com/abc.jpg
-#
-# Retrocompatibilidad: si el campo 4 NO empieza con "http"
-# se trata como categoría legacy y imagen_url queda vacío.
-# Así los datos ya guardados no rompen la lectura.
-# ============================================================
+# ── Helpers de productos de bazar (sin cambios de lógica) ────
 
 def leer_productos() -> list[dict]:
     """
-    Lee productos.txt con enumerate() para obtener line_index.
-    Detecta automáticamente si el campo 4 es URL o categoría antigua.
+    Lee productos.txt — catálogo del bazar.
+    Formato: id_producto, nombre, precio, imagen_url
+    Ej: B01,Cuaderno Anillado A4,12.50,https://...jpg
     """
     productos = []
     try:
@@ -151,118 +137,20 @@ def leer_productos() -> list[dict]:
                     continue
 
                 campo4 = partes[3].strip() if len(partes) > 3 else ""
-
-                # ✅ Distinguir URL de categoría legacy
-                if campo4.startswith("http"):
-                    imagen_url = campo4
-                else:
-                    # Dato legacy: imagen vacía, el frontend usará fallback
-                    imagen_url = ""
+                imagen_url = campo4 if campo4.startswith("http") else ""
 
                 productos.append({
                     "line_index":  line_index,
                     "id_producto": partes[0].strip(),
                     "nombre":      partes[1].strip(),
                     "precio":      float(partes[2].strip()),
-                    # ✅ Clave "imagen_url" — la que el frontend consume
                     "imagen_url":  imagen_url,
                 })
     except FileNotFoundError:
         pass
     return productos
 
-
 def guardar_productos(productos: list[dict]) -> None:
-    """Serializa con imagen_url en campo 4."""
-    with open(ARCHIVO_PRODUCTOS, "w", encoding="utf-8") as f:
-        for p in productos:
-            f.write(
-                f"{p['id_producto']},"
-                f"{p['nombre']},"
-                f"{p['precio']},"
-                f"{p['imagen_url']}\n"
-            )
-
-
-# ── API Productos ─────────────────────────────────────────────
-
-@app.route("/api/productos", methods=["GET"])
-def api_productos_listar():
-    """
-    Público. Retorna la lista con la clave 'imagen_url' garantizada.
-    Es el contrato que script.js espera en MenuDinamico.init().
-    """
-    return jsonify({"ok": True, "productos": leer_productos()})
-
-
-@app.route("/api/productos", methods=["POST"])
-def api_productos_crear():
-    """
-    ✅ Recibe { nombre, precio, imagen_url } — ya no "categoria".
-    Solo admin 001.
-    """
-    err = verificar_admin()
-    if err:
-        return err
-
-    data       = request.get_json(silent=True)
-    nombre     = data.get("nombre", "").strip().replace(",", "")
-    imagen_url = data.get("imagen_url", "").strip()
-
-    if not nombre:
-        return jsonify({"ok": False, "mensaje": "El nombre es obligatorio."})
-
-    # Validar que sea una URL real
-    if not imagen_url.startswith("http"):
-        return jsonify({"ok": False, "mensaje": "La URL debe empezar con http o https."})
-
-    try:
-        precio = round(float(data.get("precio")), 2)
-        if precio <= 0:
-            raise ValueError
-    except (TypeError, ValueError):
-        return jsonify({"ok": False, "mensaje": "Precio inválido."})
-
-    if any(p["nombre"].lower() == nombre.lower() for p in leer_productos()):
-        return jsonify({"ok": False, "mensaje": f"Ya existe '{nombre}' en el menú."})
-
-    nuevo_id = generar_id_producto()
-
-    with open(ARCHIVO_PRODUCTOS, "a", encoding="utf-8") as f:
-        f.write(f"{nuevo_id},{nombre},{precio},{imagen_url}\n")
-
-    # Releer para obtener el line_index real del ítem recién escrito
-    producto_creado = leer_productos()[-1]
-
-    return jsonify({
-        "ok":       True,
-        "mensaje":  f"'{nombre}' agregado al menú.",
-        "producto": producto_creado   # incluye imagen_url e line_index correctos
-    })
-
-
-@app.route("/api/productos/<int:line_index>", methods=["DELETE"])
-def api_productos_eliminar(line_index):
-    """Sin cambios respecto al Gist — funciona igual."""
-    err = verificar_admin()
-    if err:
-        return err
-    try:
-        with open(ARCHIVO_PRODUCTOS, "r", encoding="utf-8") as f:
-            lineas = f.readlines()
-    except FileNotFoundError:
-        return jsonify({"ok": False, "mensaje": "Archivo no encontrado."}), 404
-    if line_index < 0 or line_index >= len(lineas):
-        return jsonify({"ok": False, "mensaje": "Producto no encontrado."}), 404
-    partes           = lineas[line_index].strip().split(",")
-    nombre_eliminado = partes[1].strip() if len(partes) > 1 else "Desconocido"
-    del lineas[line_index]
-    with open(ARCHIVO_PRODUCTOS, "w", encoding="utf-8") as f:
-        f.writelines(lineas)
-    return jsonify({"ok": True, "mensaje": f"'{nombre_eliminado}' eliminado del menú."})
-
-def guardar_productos(productos: list[dict]) -> None:
-    """Serializa productos con el nuevo formato de 4 campos."""
     with open(ARCHIVO_PRODUCTOS, "w", encoding="utf-8") as f:
         for p in productos:
             f.write(
@@ -273,15 +161,19 @@ def guardar_productos(productos: list[dict]) -> None:
             )
 
 def generar_id_producto() -> str:
-    """Genera ID correlativo P01, P02, ..."""
+    """
+    Genera el próximo ID correlativo del catálogo (B01, B02, ...).
+    ✅ Prefijo cambiado de "P" a "B" (Bazar) — solo cosmético,
+    no afecta el algoritmo de incremento.
+    """
     productos = leer_productos()
     if not productos:
-        return "P01"
+        return "B01"
     try:
         ultimo_num = int(productos[-1]["id_producto"][1:])
-        return f"P{str(ultimo_num + 1).zfill(2)}"
+        return f"B{str(ultimo_num + 1).zfill(2)}"
     except (ValueError, IndexError):
-        return f"P{str(len(productos) + 1).zfill(2)}"
+        return f"B{str(len(productos) + 1).zfill(2)}"
 
 
 # ── Verificación de admin (sin cambios) ──────────────────────
@@ -299,7 +191,7 @@ def verificar_admin():
 
 @app.route("/")
 def inicio():
-    """Pasa productos al template para el menú dinámico."""
+    """Pasa el catálogo del bazar al template para el render dinámico."""
     return render_template(
         "index.html",
         usuario=session.get("usuario"),
@@ -307,7 +199,7 @@ def inicio():
     )
 
 
-# ── API Usuarios (sin cambios) ────────────────────────────────
+# ── API Usuarios (sin cambios de lógica) ──────────────────────
 
 @app.route("/api/usuario", methods=["POST"])
 def api_usuario():
@@ -340,7 +232,7 @@ def api_usuario():
             return jsonify({"ok": False, "mensaje": "El código ya está registrado."})
         with open(ARCHIVO_USUARIOS, "a", encoding="utf-8") as f:
             f.write(f"{codigo},{nombres},{apellidos}\n")
-        return jsonify({"ok": True, "mensaje": "Usuario registrado correctamente."})
+        return jsonify({"ok": True, "mensaje": "¡Bienvenido al Bazar de Omar! Usuario registrado."})
 
     elif accion == "modificar":
         usuario_sesion = session.get("usuario")
@@ -385,16 +277,17 @@ def api_usuario():
     return jsonify({"ok": False, "mensaje": "Acción no reconocida."}), 400
 
 
-# ── API Pedidos (sin cambios) ─────────────────────────────────
+# ── API Pedidos/Compras (sin cambios de lógica) ───────────────
 
 @app.route("/api/pedido", methods=["POST"])
 def api_pedido():
+    """Guarda una compra nueva con estado 'espera'."""
     usuario = session.get("usuario")
     if not usuario:
-        return jsonify({"ok": False, "mensaje": "Debes iniciar sesión para pedir."}), 401
+        return jsonify({"ok": False, "mensaje": "Debes iniciar sesión para comprar."}), 401
     data = request.get_json(silent=True)
     if not data or not data.get("items"):
-        return jsonify({"ok": False, "mensaje": "Carrito vacío o datos inválidos."}), 400
+        return jsonify({"ok": False, "mensaje": "Tu carrito está vacío."}), 400
     ahora = datetime.now().strftime("%Y-%m-%d %H:%M")
     with open(ARCHIVO_PEDIDOS, "a", encoding="utf-8") as f:
         for item in data["items"]:
@@ -402,11 +295,15 @@ def api_pedido():
             cantidad = int(item.get("cantidad", 1))
             precio   = float(item.get("precio", 0))
             f.write(f"{usuario['codigo']},{nombre},{cantidad},{precio},espera,{ahora}\n")
-    return jsonify({"ok": True, "mensaje": "¡Pedido confirmado!"})
+    return jsonify({"ok": True, "mensaje": "¡Compra registrada con éxito!"})
+
 
 @app.route("/api/pedido/estado", methods=["POST"])
 def api_pedido_estado():
-    """Cambia el estado de una línea exacta de pedidos.txt."""
+    """
+    Cambia el estado de una compra usando line_index.
+    ✅ Mismo algoritmo exacto del Gist — no se modificó nada aquí.
+    """
     err = verificar_admin()
     if err:
         return err
@@ -423,7 +320,7 @@ def api_pedido_estado():
     except FileNotFoundError:
         return jsonify({"ok": False, "mensaje": "Archivo no encontrado."}), 404
     if line_index >= len(lineas):
-        return jsonify({"ok": False, "mensaje": "Pedido no encontrado."}), 404
+        return jsonify({"ok": False, "mensaje": "Compra no encontrada."}), 404
     partes = lineas[line_index].strip().split(",")
     if len(partes) < 4:
         return jsonify({"ok": False, "mensaje": "Línea malformada."}), 400
@@ -435,13 +332,83 @@ def api_pedido_estado():
     )
     with open(ARCHIVO_PEDIDOS, "w", encoding="utf-8") as f:
         f.writelines(lineas)
-    return jsonify({"ok": True, "mensaje": f"Pedido actualizado a '{nuevo_estado}'."})
+    return jsonify({"ok": True, "mensaje": f"Compra actualizada a '{nuevo_estado}'."})
+
+
+# ── API Productos del Bazar (sin cambios de lógica) ───────────
+
+@app.route("/api/productos", methods=["GET"])
+def api_productos_listar():
+    """Público. Catálogo completo del bazar para el cliente."""
+    return jsonify({"ok": True, "productos": leer_productos()})
+
+
+@app.route("/api/productos", methods=["POST"])
+def api_productos_crear():
+    """Crea un producto de bazar. Solo admin 001."""
+    err = verificar_admin()
+    if err:
+        return err
+
+    data       = request.get_json(silent=True)
+    nombre     = data.get("nombre", "").strip().replace(",", "")
+    imagen_url = data.get("imagen_url", "").strip()
+
+    if not nombre:
+        return jsonify({"ok": False, "mensaje": "El nombre es obligatorio."})
+    if not imagen_url.startswith("http"):
+        return jsonify({"ok": False, "mensaje": "La URL debe empezar con http o https."})
+
+    try:
+        precio = round(float(data.get("precio")), 2)
+        if precio <= 0:
+            raise ValueError
+    except (TypeError, ValueError):
+        return jsonify({"ok": False, "mensaje": "Precio inválido."})
+
+    if any(p["nombre"].lower() == nombre.lower() for p in leer_productos()):
+        return jsonify({"ok": False, "mensaje": f"Ya existe '{nombre}' en el catálogo."})
+
+    nuevo_id = generar_id_producto()
+
+    with open(ARCHIVO_PRODUCTOS, "a", encoding="utf-8") as f:
+        f.write(f"{nuevo_id},{nombre},{precio},{imagen_url}\n")
+
+    producto_creado = leer_productos()[-1]
+
+    return jsonify({
+        "ok":       True,
+        "mensaje":  f"'{nombre}' agregado al catálogo.",
+        "producto": producto_creado
+    })
+
+
+@app.route("/api/productos/<int:line_index>", methods=["DELETE"])
+def api_productos_eliminar(line_index):
+    """Elimina un producto del bazar por línea cruda. Solo admin 001."""
+    err = verificar_admin()
+    if err:
+        return err
+    try:
+        with open(ARCHIVO_PRODUCTOS, "r", encoding="utf-8") as f:
+            lineas = f.readlines()
+    except FileNotFoundError:
+        return jsonify({"ok": False, "mensaje": "Archivo no encontrado."}), 404
+    if line_index < 0 or line_index >= len(lineas):
+        return jsonify({"ok": False, "mensaje": "Producto no encontrado."}), 404
+    partes           = lineas[line_index].strip().split(",")
+    nombre_eliminado = partes[1].strip() if len(partes) > 1 else "Desconocido"
+    del lineas[line_index]
+    with open(ARCHIVO_PRODUCTOS, "w", encoding="utf-8") as f:
+        f.writelines(lineas)
+    return jsonify({"ok": True, "mensaje": f"'{nombre_eliminado}' eliminado del catálogo."})
+
 
 # ── Dashboard ─────────────────────────────────────────────────
 
 @app.route("/dashboard")
 def dashboard():
-    """Panel admin. Solo usuario 001."""
+    """Panel admin del Bazar de Omar. Solo usuario 001."""
     usuario = session.get("usuario")
     if not usuario or usuario["codigo"] != "001":
         return redirect(url_for("inicio"))
@@ -450,7 +417,7 @@ def dashboard():
     pedidos   = leer_pedidos()
     productos = leer_productos()
 
-    # ✅ JOIN que alimenta los gráficos — no tocar
+    # ✅ JOIN intacto — alimenta ambos gráficos de Chart.js
     pedidos_enriquecidos = enriquecer_pedidos_con_usuarios(pedidos, usuarios)
 
     pedidos_espera      = [p for p in pedidos_enriquecidos if p["estado"] == "espera"]
@@ -460,8 +427,6 @@ def dashboard():
     total_pedidos  = len(pedidos_enriquecidos)
     total_usuarios = len(usuarios)
 
-    # ── Datos para Chart.js: ventas agrupadas por usuario ──
-    # Clave = "001 - Omar Vilela", valor = total S/ gastado
     ventas_por_usuario: dict[str, float] = {}
     for p in pedidos_enriquecidos:
         clave = f"{p['codigo_usuario']} - {p['nombre_usuario']}"
@@ -469,7 +434,6 @@ def dashboard():
             ventas_por_usuario.get(clave, 0) + p["subtotal"], 2
         )
 
-    # ── Resumen por producto para la tabla ──
     resumen_productos: dict[str, dict] = {}
     for p in pedidos_enriquecidos:
         if p["producto"] not in resumen_productos:
@@ -490,7 +454,6 @@ def dashboard():
         total_pedidos       = total_pedidos,
         total_usuarios      = total_usuarios,
         resumen_productos   = resumen_productos,
-        # Listas paralelas que Chart.js consume vía data-*
         chart_labels        = list(ventas_por_usuario.keys()),
         chart_data          = list(ventas_por_usuario.values()),
     )
